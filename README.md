@@ -273,8 +273,8 @@ Perfect for **internship**, **portfolio**, and **production-ready apps**.
 
 **Saddam Ansari**  
 B.Tech CSE — MERN Stack Developer  
-GitHub: *add your link here*  
-LinkedIn: *add your link here*
+GitHub: *https://github.com/Saddam-111*  
+LinkedIn: *https://www.linkedin.com/in/saddam11*
 
 ---
 
