@@ -16,7 +16,7 @@ This project was built as part of an **internship major project** by *Saddam Ans
 
 # 📸 Screenshots
 
-> **Upload your images later by replacing the empty brackets.**
+
 
 ## 🖼️ Frontend UI Screenshots
 
