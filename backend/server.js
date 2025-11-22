@@ -23,7 +23,7 @@ const port = process.env.PORT;
 await dbConnect()
 
 const limiter = rateLimit({
-  windowMs: 10*60*1000,
+  windowMs: 10 * 60 * 1000,
   max: 50,
   message: "Too may requests from this IP, please try again later."
 })
@@ -34,9 +34,14 @@ const limiter = rateLimit({
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://vedseem-internship-project.vercel.app",
+    "https://vedseem-internship-project-admin.vercel.app"
+  ],
   credentials: true,
-  methods: ["GET", "POST","PATCH", "PUT", "DELETE"]
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
 }))
 
 app.get('/', (req, res) => {
@@ -50,7 +55,7 @@ app.use('/api/v1/product', productRouter)
 app.use("/api/v1/cart", cartRouter);
 
 app.use("/api/v1/order", orderRouter);
-app.use('/api/v1/admindata',adminRouter)
+app.use('/api/v1/admindata', adminRouter)
 app.use('/api/v1/location', locationRouter)
 app.use("/api/v1/review", reviewRouter);
 
@@ -59,5 +64,5 @@ app.use("/api/v1/review", reviewRouter);
 
 
 app.listen(port, () => {
-  console.log("Server is listening on port:",port)
+  console.log("Server is listening on port:", port)
 })
