@@ -26,12 +26,7 @@ const limiter = rateLimit({
   max: 50,
   message: "Too may requests from this IP, please try again later."
 })
-
-
-//middleware
-//app.use(limiter)
-app.use(express.json())
-app.use(cookieParser())
+//cors
 app.use(cors({
   origin: [
     "http://localhost:5173",
@@ -42,6 +37,12 @@ app.use(cors({
   credentials: true,
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
 }))
+
+//middleware
+
+app.use(express.json())
+app.use(cookieParser())
+
 
 //database connection
 await dbConnect()

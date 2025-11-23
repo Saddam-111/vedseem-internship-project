@@ -1,15 +1,15 @@
 // CartContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { UserDataContext } from "./UserContext";
+// import { UserDataContext } from "./UserContext";
 
 export const CartDataContext = createContext();
 
 export const CartContext = ({ children }) => {
-  const { baseUrl } = useContext(UserDataContext);
+  // const { baseUrl } = useContext(UserDataContext);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const baseUrl = import.meta.env.VITE_BASE_URL
   // Fetch cart
   const fetchCart = async () => {
     if (!baseUrl) return;
