@@ -18,9 +18,8 @@ dotenv.config()
 
 const app = express()
 const port = process.env.PORT;
+app.set("trust proxy", 1);
 
-//database connection
-await dbConnect()
 
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000,
@@ -43,6 +42,9 @@ app.use(cors({
   credentials: true,
   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"]
 }))
+
+//database connection
+await dbConnect()
 
 app.get('/', (req, res) => {
   res.send("Server is working")
