@@ -58,7 +58,8 @@ This project was built as part of an **internship major project** by *Saddam Ans
 
 ## 🧾 Internship Certificate
 
-<img width="986" height="704" alt="Screenshot 2025-11-24 233753" src="https://github.com/user-attachments/assets/d4f506f8-ab7f-4c24-bf20-9fd2f4472272" />
+![internship-certificate](https://github.com/user-attachments/assets/d7b6378f-224f-40c0-9632-c80791c507c5)
+
 
 
 
