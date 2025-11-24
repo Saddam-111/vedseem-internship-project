@@ -47,7 +47,7 @@ const Home = () => {
   const [topProducts, setTopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState([]);
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
   // Fetch aggregated admin stats
   const fetchStats = async () => {
     if (!baseUrl) return;
@@ -127,6 +127,10 @@ const Home = () => {
     }
   };
 
+  const loadAllData = async () => {
+  await Promise.all([fetchStats(), fetchProducts(), fetchOrders()]);
+};
+
   useEffect(() => {
     let mounted = true;
     const loadAll = async () => {
@@ -151,6 +155,12 @@ const Home = () => {
     return `${days}d ago`;
   };
 
+const refresh = async () => {
+  setIsRefreshing(true);
+  await loadAllData();
+  setIsRefreshing(false);
+};
+
   return (
     <div className="p-6 flex-1 overflow-y-auto">
       {/* Header */}
@@ -162,15 +172,10 @@ const Home = () => {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => {
-              // quick refresh
-              fetchStats();
-              fetchProducts();
-              fetchOrders();
-            }}
+            onClick={refresh}
             className="px-4 py-2 rounded-lg bg-yellow-400 text-black font-medium hover:brightness-95 transition"
           >
-            Refresh
+            {isRefreshing? "Refreshing" : "Refresh"}
           </button>
         </div>
       </div>
@@ -282,13 +287,6 @@ const Home = () => {
                         >
                           {o.status || "Unknown"}
                         </span>
-
-                        {/* <button
-                          onClick={() => window.open(`/admin/orders/${o._id.slice}`, "_self")}
-                          className="text-xs text-blue-600 hover:underline flex items-center gap-2"
-                        >
-                          <FaEye size={12} /> View
-                        </button> */}
                       </div>
                     </div>
                   </div>
@@ -323,7 +321,7 @@ const Home = () => {
                       <div className="text-sm font-semibold text-red-600">Stock: {p.stock}</div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => window.open(`/admin/edit/${p._id}`, "_self")}
+                          onClick={() => window.open(`/lists`, "_self")}
                           className="text-xs px-3 py-1 rounded bg-blue-50 text-blue-700"
                         >
                           Edit
@@ -378,21 +376,21 @@ const Home = () => {
 
     <button
       onClick={() => window.open("/lists", "_self")}
-      className="w-full py-2 rounded border"
+      className="w-full py-2 rounded border hover:bg-amber-500 cursor-pointer "
     >
       Manage Products
     </button>
 
     <button
       onClick={() => window.open("/blog-list", "_self")}
-      className="w-full py-2 rounded border"
+      className="w-full py-2 rounded border hover:bg-amber-500 cursor-pointer"
     >
       Manage Blogs
     </button>
 
     <button
       onClick={() => window.open("/orders", "_self")}
-      className="w-full py-2 rounded border"
+      className="w-full py-2 rounded border hover:bg-amber-500 cursor-pointer"
     >
       View Orders
     </button>

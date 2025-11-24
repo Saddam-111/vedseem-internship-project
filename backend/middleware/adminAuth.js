@@ -2,13 +2,13 @@ import jwt from 'jsonwebtoken'
 
 export const adminAuth = async (req , res, next) => {
   try {
-    const {token} = req.cookies
-    if(!token){
+    const {adminToken} = req.cookies
+    if(!adminToken){
       return res.status(400).json({
-        message: "Token not found"
+        message: "Admin token not found"
       })
     }
-    const verifyToken = jwt.verify(token, process.env.JWT_SECRET)
+    const verifyToken = jwt.verify(adminToken, process.env.JWT_SECRET)
     if(!verifyToken){
       return res.status(400).json({
         message: "Admin doesn't have token"

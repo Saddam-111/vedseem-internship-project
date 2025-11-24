@@ -5,7 +5,7 @@ import { AiTwotoneFileAdd } from "react-icons/ai";
 import { MdDashboard } from "react-icons/md";
 import { LuList } from "react-icons/lu";
 import { AdminDataContext } from "../context/AdminContext";
-
+import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
 const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }) => {
   const { newOrders } = useContext(AdminDataContext);
 
@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }) => {
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {/* show compact arrows; when collapsed show '➡' (expand), else show '⬅' (collapse) */}
-          <span className="text-lg select-none">{collapsed ? "➡" : "⬅"}</span>
+          <span className="text-3xl select-none bg-[#F0D800] text-[#710000] px-3 py-1 rounded">{collapsed ? <FaChevronCircleLeft /> : <FaChevronCircleRight />}</span>
         </button>
 
         {/* Mobile close button on the right (visible on small screens) */}

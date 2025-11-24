@@ -54,14 +54,14 @@ export const register = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "none",
       path: "/",
       secure: true,
+      sameSite: "none",
       maxAge: 3 * 24 * 60 * 60 * 1000
     })
 
 
-    res.status(200).json({
+    return res.status(200).json({
       user,
       token
     })
@@ -108,9 +108,9 @@ export const login = async (req, res) => {
     const token = await generateToken(user._id);
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "none",
       path: "/",
       secure: true,
+      sameSite: "none",
       maxAge: 3 * 24 * 60 * 60 * 1000
     })
 
@@ -141,9 +141,9 @@ export const googleLogin = async (req, res) => {
     const token = await generateToken(user._id);
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "none",
       path: "/",
       secure: true,
+      sameSite: "none",
       maxAge: 3 * 24 * 60 * 60 * 1000
     })
 
@@ -189,7 +189,7 @@ export const adminLogin = async (req, res) => {
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
 
       const token = await generateAdminToken(email)
-      res.cookie("token", token, {
+      res.cookie("adminToken", token, {
         httpOnly: true,
         secure: true,
         path: "/",
@@ -207,6 +207,21 @@ export const adminLogin = async (req, res) => {
     })
   }
 }
+
+export const adminLogout = async (req, res) => {
+  try {
+    res.clearCookie("adminToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/"
+    });
+    return res.status(200).json({ message: "Admin logged out successfully" });
+  } catch (error) {
+    console.log("Admin logout error:", error.message);
+    return res.status(500).json({ message: "Logout failed" });
+  }
+};
 
 //forgot password
 

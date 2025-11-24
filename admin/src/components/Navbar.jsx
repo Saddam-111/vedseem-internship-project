@@ -12,7 +12,7 @@ const Navbar = ({ toggleSidebar }) => {
 
   const logout = async () => {
     try {
-      await axios.get(baseUrl + "/api/v1/auth/logout", {
+      await axios.get(baseUrl + "/api/v1/auth/adminLogout", {
         withCredentials: true,
       });
       getAdmin();
