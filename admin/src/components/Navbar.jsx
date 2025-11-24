@@ -23,28 +23,42 @@ const Navbar = ({ toggleSidebar }) => {
   };
 
   return (
-    <header className="w-full bg-[#F0D800] shadow-sm flex items-center justify-between px-4 py-2">
-      {/* Sidebar Toggle (mobile) */}
-      <button
-        onClick={toggleSidebar}
-        className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-      >
-        <FiMenu size={22} />
-      </button>
+   <header className="w-full bg-[#F0D800] shadow-sm px-4 py-2 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
-      {/* Brand */}
-      <h1 className="text-xl font-bold text-gray-800 cursor-pointer" onClick={() => navigate('/')}>
-       <span className="text-black">Admin</span>
-      </h1>
+  {/* LEFT: Sidebar Toggle (mobile only) */}
+  <div className="flex items-center">
+    <button
+      onClick={toggleSidebar}
+      className="md:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+    >
+      <FiMenu size={22} />
+    </button>
+  </div>
 
-      {/* Logout Button */}
-      <button
-        onClick={logout}
-        className="px-4 py-2 bg-white hover:bg-black text-black font-bold rounded-lg shadow hover:text-white   transition cursor-pointer"
-      >
-        Logout
-      </button>
-    </header>
+  {/* CENTER: Brand (always centered thanks to grid) */}
+  <div className="flex justify-center">
+    <h1
+      className="text-xl font-bold text-gray-800 cursor-pointer truncate"
+      onClick={() => navigate('/')}
+      title="Admin"
+    >
+      <span className="text-black">Admin</span>
+    </h1>
+  </div>
+
+  {/* RIGHT: Logout Button */}
+  <div className="flex items-center justify-end">
+    <button
+      onClick={logout}
+      className="px-4 py-2 bg-white hover:bg-black text-black font-bold rounded-lg shadow hover:text-white transition cursor-pointer"
+    >
+      Logout
+    </button>
+  </div>
+
+</header>
+
+
   );
 };
 
