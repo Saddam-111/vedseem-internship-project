@@ -97,7 +97,6 @@ reviews: [
   }
 ],
 
-// ⭐ Add average rating + number of reviews
 rating: {
   type: Number,
   default: 0,

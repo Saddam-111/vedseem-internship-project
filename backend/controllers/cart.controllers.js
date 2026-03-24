@@ -83,20 +83,20 @@ export const addToCart = async (req, res) => {
 };
 
 
-// ✅ Update quantity (MODIFIED to use cartItemId)
+
 export const updateCart = async (req, res) => {
   try {
     const { cartItemId, quantity } = req.body;
     const cart = await Cart.findOne({ user: req.userId });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    const item = cart.items.id(cartItemId); // Use Mongoose's .id() to find subdocument
+    const item = cart.items.id(cartItemId); 
     if (!item) return res.status(404).json({ message: "Product not in cart" });
 
     if (quantity > 0) {
       item.quantity = quantity;
     } else {
-      cart.items.pull({ _id: cartItemId }); // Use .pull() to remove subdocument
+      cart.items.pull({ _id: cartItemId });
     }
 
     await cart.save();
@@ -108,14 +108,14 @@ export const updateCart = async (req, res) => {
   }
 };
 
-// ✅ Remove product (MODIFIED to use cartItemId)
+
 export const removeFromCart = async (req, res) => {
   try {
     const { cartItemId } = req.params;
     const cart = await Cart.findOne({ user: req.userId });
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    cart.items.pull({ _id: cartItemId }); // Use .pull() to remove subdocument by its unique ID
+    cart.items.pull({ _id: cartItemId }); 
 
     await cart.save();
     const populatedCart = await cart.populate('items.product');
@@ -126,7 +126,7 @@ export const removeFromCart = async (req, res) => {
   }
 };
 
-// ✅ Clear cart
+
 export const clearCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.userId });
@@ -142,7 +142,7 @@ export const clearCart = async (req, res) => {
   }
 };
 
-// ✅ Get full cart
+
 export const getUserCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.userId }).populate('items.product');

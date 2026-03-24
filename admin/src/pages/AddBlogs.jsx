@@ -2,13 +2,12 @@ import React, { useContext, useState } from "react";
 import axios from "axios";
 import { AuthDataContext } from "../context/AuthContext";
 
-
 const AddBlogs = () => {
-  const {baseUrl} = useContext(AuthDataContext)
+  const { baseUrl } = useContext(AuthDataContext);
   const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("gifting"); // lowercase
+  const [category, setCategory] = useState("gifting");
   const [loading, setLoading] = useState(false);
 
   const handleAdd = async (e) => {
@@ -19,14 +18,12 @@ const AddBlogs = () => {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
-      formData.append("category", category.toLowerCase()); // send lowercase
+      formData.append("category", category.toLowerCase());
       if (image) formData.append("image", image);
 
-      const result = await axios.post(
-        `${baseUrl}/api/v1/blogs/add`,
-        formData,
-        { withCredentials: true }
-      );
+      const result = await axios.post(`${baseUrl}/api/v1/blogs/add`, formData, {
+        withCredentials: true,
+      });
 
       console.log("Blog added:", result.data);
 
@@ -45,15 +42,14 @@ const AddBlogs = () => {
   return (
     <div className="w-full max-w-5xl mx-auto p-6 overflow-auto mb-10 ">
       <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#F0D800] to-[#897d0f] p-6">
           <h2 className="text-3xl font-bold text-white">Add New Blogs</h2>
-          <p className="text-gray-200 mt-1">Fill all the details to add new blog</p>
+          <p className="text-gray-200 mt-1">
+            Fill all the details to add new blog
+          </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleAdd} className="p-6 space-y-6">
-          {/* Image Upload */}
           <div>
             <p className="text-gray-700 font-semibold mb-2">Upload Image</p>
             <input
@@ -71,7 +67,6 @@ const AddBlogs = () => {
             )}
           </div>
 
-          {/* Product Name */}
           <div>
             <p className="text-gray-700 font-semibold mb-1">Title</p>
             <input
@@ -84,7 +79,6 @@ const AddBlogs = () => {
             />
           </div>
 
-          {/* Description */}
           <div>
             <p className="text-gray-700 font-semibold mb-1">Description</p>
             <textarea
@@ -97,7 +91,6 @@ const AddBlogs = () => {
             />
           </div>
 
-          {/* Category & Subcategory */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <p className="text-gray-700 font-semibold mb-1">Category</p>
@@ -113,11 +106,8 @@ const AddBlogs = () => {
                 <option value="congratulation">Congratulation</option>
               </select>
             </div>
-
           </div>
 
-
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}

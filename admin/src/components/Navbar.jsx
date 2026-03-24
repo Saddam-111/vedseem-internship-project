@@ -25,7 +25,6 @@ const Navbar = ({ toggleSidebar }) => {
   return (
    <header className="w-full bg-[#F0D800] shadow-sm px-4 py-2 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
-  {/* LEFT: Sidebar Toggle (mobile only) */}
   <div className="flex items-center">
     <button
       onClick={toggleSidebar}
@@ -34,8 +33,6 @@ const Navbar = ({ toggleSidebar }) => {
       <FiMenu size={22} />
     </button>
   </div>
-
-  {/* CENTER: Brand (always centered thanks to grid) */}
   <div className="flex justify-center">
     <h1
       className="text-xl font-bold text-gray-800 cursor-pointer truncate"
@@ -46,7 +43,6 @@ const Navbar = ({ toggleSidebar }) => {
     </h1>
   </div>
 
-  {/* RIGHT: Logout Button */}
   <div className="flex items-center justify-end">
     <button
       onClick={logout}

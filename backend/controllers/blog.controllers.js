@@ -6,7 +6,7 @@ export const addBlogs = async (req, res) => {
     const { title, description, category } = req.body;
     let image = null;
 
-    if (req.file) {  // <-- change here
+    if (req.file) {
       const result = await uploadCloudinary(req.file.path, "blogs");
 
       if (result && result.secure_url && result.public_id) {
@@ -22,7 +22,7 @@ export const addBlogs = async (req, res) => {
       }
     }
 
-    // Check if all required fields are provided
+
     if (!title || !description || !image || !category) {
       return res.status(400).json({
         success: false,
@@ -30,7 +30,7 @@ export const addBlogs = async (req, res) => {
       });
     }
 
-    // Create a new blog document
+
     const newBlog = new Blog({
       title,
       description,
@@ -56,7 +56,7 @@ export const addBlogs = async (req, res) => {
 
 
 
-// Delete Blog
+
 export const deleteBlog = async (req, res) => {
   try {
     const { blogId } = req.params;
@@ -71,7 +71,7 @@ export const deleteBlog = async (req, res) => {
 
     await deleteCloudinary(blog.publicId)
 
-    // Delete the blog from the database
+
     await blog.remove();
 
     return res.status(200).json({
@@ -91,7 +91,7 @@ export const updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find existing blog
+
     const blog = await Blog.findById(id);
     if (!blog) {
       return res.status(404).json({
@@ -100,12 +100,12 @@ export const updateBlog = async (req, res) => {
       });
     }
 
-    // Update fields
+
     if (req.body.title !== undefined) blog.title = req.body.title;
     if (req.body.description !== undefined) blog.description = req.body.description;
     if (req.body.category !== undefined) blog.category = req.body.category;
 
-    // If new image uploaded, replace Cloudinary image
+
     if (req.file) {
       if (blog.image?.publicId) {
         await deleteCloudinary(blog.image.publicId);
@@ -140,22 +140,22 @@ export const updateBlog = async (req, res) => {
 
 export const listAllBlogs = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+    const { page = 1, limit = 10 } = req.query;
 
-    // Convert to numbers
+
     const pageNumber = parseInt(page, 10);
     const pageLimit = parseInt(limit, 10);
 
-    // Skip and limit logic for pagination
+
     const skip = (pageNumber - 1) * pageLimit;
 
-    // Get all blogs with pagination
+
     const blogs = await Blog.find()
       .skip(skip)
       .limit(pageLimit)
-      .sort({ createdAt: -1 }); // Sort blogs by creation date (most recent first)
+      .sort({ createdAt: -1 });
 
-    // Get the total count of blogs for pagination
+
     const totalBlogs = await Blog.countDocuments();
 
     return res.status(200).json({

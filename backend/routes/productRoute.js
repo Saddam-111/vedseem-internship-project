@@ -11,7 +11,7 @@ import { upload } from "../middleware/multer.js";
 
 export const productRouter = express.Router();
 
-// CRUD routes
+
 productRouter.post("/addProduct", upload.single("image") ,adminAuth, addProduct);
 productRouter.get("/getProducts", getProducts);
 productRouter.get("/category/:category", getProductsByCategory);

@@ -138,7 +138,7 @@ const Cart = () => {
           ))}
         </div>
 
-        {/* Sticky Bottom Bar */}
+      
         <div className="fixed bottom-0 left-0 w-full bg-white border-t shadow-lg p-4">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-bold text-gray-900">

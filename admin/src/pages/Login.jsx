@@ -19,7 +19,7 @@ const Login = () => {
       const result = await axios.post(
         baseUrl + "/api/v1/auth/adminLogin",
         { email, password },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       getAdmin();
       navigate("/");
@@ -32,27 +32,25 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-white to-indigo-100 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-        {/* Logo / Title */}
         <h1 className="text-3xl font-extrabold text-center mb-6">
           <span className="text-indigo-700">Admin</span>{" "}
           <span className="text-yellow-500">Panel</span>
         </h1>
 
-        {/* Header */}
         <div className="text-center mb-8">
           <span className="block text-xl font-semibold text-gray-800">
             Login to Continue
           </span>
           <span className="block text-gray-500">
             Welcome back! Manage{" "}
-            <span className="text-indigo-700 font-semibold">your dashboard</span>
+            <span className="text-indigo-700 font-semibold">
+              your dashboard
+            </span>
           </span>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSignin} className="space-y-5">
           <div className="space-y-4">
-            {/* Email */}
             <input
               type="email"
               placeholder="Enter your email"
@@ -62,7 +60,6 @@ const Login = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none transition"
             />
 
-            {/* Password */}
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -81,7 +78,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold shadow-md transition"
@@ -90,7 +86,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
           Trouble logging in?{" "}
           <span className="text-indigo-700 cursor-pointer hover:underline">

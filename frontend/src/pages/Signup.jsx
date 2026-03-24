@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { MdOutlineKeyboardBackspace } from "react-icons/md";
-import { FcGoogle } from "react-icons/fc"; // Google Icon
+import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { UserDataContext } from "../context/UserContext";
 import img from "../assets/image1.jpg";
@@ -13,7 +13,7 @@ function Signup() {
   const navigate = useNavigate();
   const { baseUrl, setUserData } = useContext(UserDataContext);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // ✅ State to hold error messages
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -28,12 +28,11 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors on a new submission
+    setError(""); 
 
-    // ✅ Client-side validation for password match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
-      return; // Stop the submission
+      return; 
     }
 
     try {
@@ -44,9 +43,8 @@ function Signup() {
       setUserData(res.data.user);
       console.log(res.data);
       console.log(res.data.user);
-      navigate("/"); // Navigate to home on successful signup
+      navigate("/");
     } catch (err) {
-      // ✅ Set error message from backend response
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
@@ -75,7 +73,7 @@ function Signup() {
       console.log(result.data);
     } catch (error) {
       console.log(error);
-      setError("Google signup failed. Please try again."); // ✅ Error feedback for Google signup
+      setError("Google signup failed. Please try again.");
     }
   };
 
@@ -89,7 +87,6 @@ function Signup() {
           transition={{ duration: 0.4 }}
           className="flex w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden"
         >
-          {/* Left Section (Form) */}
           <div className="w-full md:w-1/2 p-8 sm:p-10 flex flex-col justify-center">
             <button
               onClick={() => navigate(-1)}
@@ -154,7 +151,6 @@ function Signup() {
                 />
               </div>
 
-              {/* ✅ Display Error Message Here */}
               {error && (
                 <p className="text-red-500 text-sm text-center font-semibold">
                   {error}
@@ -170,14 +166,13 @@ function Signup() {
               </button>
             </form>
 
-            {/* Divider */}
+            
             <div className="flex items-center my-6">
               <div className="flex-grow h-px bg-gray-300"></div>
               <span className="px-2 text-sm text-gray-500">or continue with</span>
               <div className="flex-grow h-px bg-gray-300"></div>
             </div>
 
-            {/* Google Signup */}
             <div className="flex justify-center">
               <button
                 onClick={googleSignup}
@@ -199,7 +194,6 @@ function Signup() {
             </p>
           </div>
 
-          {/* Right Section (Image) */}
           <div className="hidden md:flex w-1/2 bg-yellow-400 items-center justify-center">
             <img src={img} alt="Signup" className="w-full h-full object-cover" />
           </div>

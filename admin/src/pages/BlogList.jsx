@@ -26,7 +26,7 @@ const BlogList = () => {
     try {
       const result = await axios.delete(
         `${baseUrl}/api/v1/blogs/delete/${id}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (result.data.success) {
         toast.success("Blog removed successfully!");
@@ -59,7 +59,7 @@ const BlogList = () => {
       const result = await axios.put(
         `${baseUrl}/api/v1/blogs/update/${selectedBlog._id}`,
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       if (result.data.success) {
@@ -86,16 +86,27 @@ const BlogList = () => {
           <table className="min-w-full border-collapse bg-white">
             <thead>
               <tr className="bg-[#F0D800] text-white">
-                <th className="px-6 py-3 text-left text-sm font-semibold">SL No</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Blog Title</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold">Image</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold">Action</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  SL No
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Blog Title
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold">
+                  Image
+                </th>
+                <th className="px-6 py-3 text-center text-sm font-semibold">
+                  Action
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {list.map((item, index) => (
-                <tr key={item._id} className="odd:bg-gray-50 hover:bg-yellow-50">
+                <tr
+                  key={item._id}
+                  className="odd:bg-gray-50 hover:bg-yellow-50"
+                >
                   <td className="px-6 py-4">{index + 1}</td>
                   <td className="px-6 py-4">{item.title}</td>
                   <td className="px-6 py-4">
@@ -125,7 +136,9 @@ const BlogList = () => {
           </table>
         </div>
       ) : (
-        <p className="text-center text-gray-500 text-lg mt-10">No Blogs available</p>
+        <p className="text-center text-gray-500 text-lg mt-10">
+          No Blogs available
+        </p>
       )}
 
       {/* Edit Modal */}

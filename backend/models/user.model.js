@@ -1,4 +1,4 @@
-// models/User.js
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      sparse: true, // allows multiple nulls but unique emails
+      sparse: true, 
     },
     password: {
-      type: String, // for normal signup (hashed password)
+      type: String, 
       required: false,
     },
   cartData: {

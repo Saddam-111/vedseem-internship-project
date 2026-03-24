@@ -5,10 +5,9 @@ import { ItemDataContext } from "../context/ItemContext";
 export default function SearchResults() {
   const { items = [] } = useContext(ItemDataContext);
 
-  // Read query param (consistent with SearchBar)
+  
   const query = new URLSearchParams(useLocation().search).get("search") || "";
 
-  // Filter products
   const results = items.filter((item) =>
     (item.name || item.title || "")
       .toLowerCase()
@@ -28,7 +27,7 @@ export default function SearchResults() {
           {results.map((item) => (
             <Link
               key={item._id}
-              to={`/product/${item._id}`} // ✅ use id for product details route
+              to={`/product/${item._id}`} 
               className="rounded-lg p-3 shadow-md hover:shadow-lg transition"
             >
               <img

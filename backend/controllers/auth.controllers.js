@@ -66,7 +66,7 @@ export const register = async (req, res) => {
       token
     })
 
-    //validation
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -166,8 +166,8 @@ export const logout = async (req, res) => {
     res.clearCookie("token", {
       httpOnly: true,
       secure: true,
-      path: "/",       // Only use true if running on HTTPS
-      sameSite: "none", // Must match cookie options used during login
+      path: "/",      
+      sameSite: "none", 
     });
 
     res.status(200).json({
@@ -238,7 +238,7 @@ export const sendOtp = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    // Always respond as if OTP was sent to prevent email enumeration
+
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -246,9 +246,9 @@ export const sendOtp = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString(); 
     user.resetOtp = otp;
-    user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 minutes from now
+    user.otpExpires = Date.now() + 5 * 60 * 1000; 
     user.isOtpVerified = false;
 
     await user.save();

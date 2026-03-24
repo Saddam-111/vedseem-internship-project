@@ -1,4 +1,3 @@
-// src/pages/admin/Lists.jsx
 import React, { useContext, useEffect, useState, useMemo } from "react";
 import { AuthDataContext } from "../context/AuthContext";
 import axios from "axios";
@@ -11,15 +10,6 @@ import {
   FaSync,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
-/**
- * Responsive Lists.jsx
- * - Insights as collapsible responsive cards (B2)
- * - Filters: responsive grid (F2)
- * - Desktop/tablet: table view (with horizontal scroll)
- * - Mobile: card-list view for each product
- * - All original logic preserved
- */
 
 const PAGE_SIZE = 10;
 
@@ -40,7 +30,7 @@ const exportToCSV = (rows, filename = "products.csv") => {
           }
           return String(val);
         })
-        .join(",")
+        .join(","),
     ),
   ].join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -61,15 +51,14 @@ const Lists = () => {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  // UI states
-  const [insightsOpen, setInsightsOpen] = useState(true); // collapsible insights section
+
+  const [insightsOpen, setInsightsOpen] = useState(true);
   const [sortBy, setSortBy] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStock, setFilterStock] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  // Edit modal states
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -77,7 +66,6 @@ const Lists = () => {
 
   const navigate = useNavigate();
 
-  // Fetch products
   const fetchList = async () => {
     try {
       if (!baseUrl) return;
@@ -95,17 +83,14 @@ const Lists = () => {
 
   useEffect(() => {
     fetchList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseUrl]);
 
-  // refresh wrapper
   const refresh = async () => {
     setIsRefreshing(true);
     await fetchList();
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
-  // Derived stats and categories (memoized)
   const stats = useMemo(() => {
     const totalProducts = list.length;
     let totalUnits = 0;
@@ -132,29 +117,26 @@ const Lists = () => {
     };
   }, [list]);
 
-  // Filter, search, date range, stock filter and sort
   useEffect(() => {
     let arr = [...list];
 
-    // Search:
     const q = query.trim().toLowerCase();
     if (q) {
       arr = arr.filter(
         (p) =>
           (p.name || "").toLowerCase().includes(q) ||
           (p.category || "").toLowerCase().includes(q) ||
-          (p.subCategory || "").toLowerCase().includes(q)
+          (p.subCategory || "").toLowerCase().includes(q),
       );
     }
 
-    // Category filter:
     if (filterCategory) {
       arr = arr.filter(
-        (p) => (p.category || "").toLowerCase() === filterCategory.toLowerCase()
+        (p) =>
+          (p.category || "").toLowerCase() === filterCategory.toLowerCase(),
       );
     }
 
-    // Stock filter:
     if (filterStock === "low") {
       arr = arr.filter((p) => {
         const s = typeof p.stock === "number" ? p.stock : Number(p.stock || 0);
@@ -163,11 +145,10 @@ const Lists = () => {
     } else if (filterStock === "out") {
       arr = arr.filter(
         (p) =>
-          (typeof p.stock === "number" ? p.stock : Number(p.stock || 0)) <= 0
+          (typeof p.stock === "number" ? p.stock : Number(p.stock || 0)) <= 0,
       );
     }
 
-    // Date range (createdAt)
     if (dateFrom) {
       const from = new Date(dateFrom);
       arr = arr.filter((p) => new Date(p.createdAt) >= from);
@@ -178,7 +159,6 @@ const Lists = () => {
       arr = arr.filter((p) => new Date(p.createdAt) <= to);
     }
 
-    // Sorting
     if (sortBy) {
       switch (sortBy) {
         case "price-asc":
@@ -214,17 +194,15 @@ const Lists = () => {
     setPage(1);
   }, [list, query, filterCategory, filterStock, dateFrom, dateTo, sortBy]);
 
-  // Pagination helpers
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Delete
   const removeList = async (id) => {
     if (!window.confirm("Are you sure to delete this product?")) return;
     try {
       const result = await axios.delete(
         `${baseUrl}/api/v1/product/delete/${id}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (result.data.success) {
         fetchList();
@@ -237,9 +215,8 @@ const Lists = () => {
     }
   };
 
-  // Edit modal functions
   const openEdit = (item) => {
-    setEditData({ ...item }); // local copy
+    setEditData({ ...item });
     setImagePreview(item.image?.url || "");
     setImageFile(null);
     setEditOpen(true);
@@ -266,14 +243,14 @@ const Lists = () => {
         "isCustomizable",
         editData.isCustomizable === true || editData.isCustomizable === "true"
           ? "true"
-          : "false"
+          : "false",
       );
       if (imageFile) formData.append("image", imageFile);
 
       const res = await axios.put(
         `${baseUrl}/api/v1/product/update/${editData._id}`,
         formData,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (res.data.success) {
         setEditOpen(false);
@@ -287,7 +264,6 @@ const Lists = () => {
     }
   };
 
-  // Export CSV - uses filtered list
   const onExportCSV = () => {
     const rows = filtered.map((p) => ({
       id: p._id,
@@ -301,7 +277,6 @@ const Lists = () => {
     exportToCSV(rows, `products_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
-  // Print - print only table area
   const onPrint = () => {
     const printContent = document.getElementById("admin-product-table");
     if (!printContent) return;
@@ -332,7 +307,6 @@ const Lists = () => {
     }, 500);
   };
 
-  // UI helpers
   const uniqueCategories = useMemo(() => {
     const s = new Set();
     list.forEach((p) => s.add((p.category || "").toLowerCase()));
@@ -341,7 +315,6 @@ const Lists = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-8xl mx-auto">
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
           <h2 className="text-2xl font-semibold">
@@ -353,7 +326,6 @@ const Lists = () => {
           </p>
         </div>
 
-        {/* Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={refresh}
@@ -387,10 +359,8 @@ const Lists = () => {
         </div>
       </div>
 
-      {/* Filters + Insights Row (filters left, insights toggle right on large screens) */}
       <div className="bg-white rounded-lg border p-4 mb-4 shadow-sm">
         <div className="md:flex md:items-start md:justify-between">
-          {/* Filters grid */}
           <div className="w-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <input
@@ -457,11 +427,9 @@ const Lists = () => {
         </div>
       </div>
 
-      {/* Insights (collapsible) */}
       {insightsOpen && (
         <div className="mb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {/* Card: Total Products */}
             <div className="rounded-lg p-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow flex items-center gap-4">
               <div className="flex-1">
                 <p className="text-sm font-medium opacity-90">Total Products</p>
@@ -471,7 +439,6 @@ const Lists = () => {
               <div className="text-3xl opacity-90">📦</div>
             </div>
 
-            {/* Card: Total Units */}
             <div className="rounded-lg p-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow flex items-center gap-4">
               <div className="flex-1">
                 <p className="text-sm font-medium opacity-90">
@@ -483,7 +450,6 @@ const Lists = () => {
               <div className="text-3xl opacity-90">📊</div>
             </div>
 
-            {/* Card: Low Stock */}
             <div className="rounded-lg p-4 bg-gradient-to-r from-pink-500 to-red-500 text-white shadow flex items-center gap-4">
               <div className="flex-1">
                 <p className="text-sm font-medium opacity-90">Low Stock (≤5)</p>
@@ -493,7 +459,6 @@ const Lists = () => {
               <div className="text-3xl opacity-90">⚠️</div>
             </div>
 
-            {/* Card: Out of Stock */}
             <div className="rounded-lg p-4 bg-gradient-to-r from-green-400 to-teal-500 text-white shadow flex items-center gap-4">
               <div className="flex-1">
                 <p className="text-sm font-medium opacity-90">Out of Stock</p>
@@ -504,7 +469,6 @@ const Lists = () => {
             </div>
           </div>
 
-          {/* Category distribution + low stock list appear under cards on larger screens */}
           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-white p-4 rounded-lg shadow">
               <h4 className="font-semibold mb-3">Category Distribution</h4>
@@ -514,7 +478,7 @@ const Lists = () => {
                 )}
                 {Object.entries(stats.byCategory).map(([cat, count]) => {
                   const percent = Math.round(
-                    (count / Math.max(1, stats.totalProducts)) * 100
+                    (count / Math.max(1, stats.totalProducts)) * 100,
                   );
                   return (
                     <div key={cat}>
@@ -543,7 +507,7 @@ const Lists = () => {
                   (p) =>
                     (typeof p.stock === "number"
                       ? p.stock
-                      : Number(p.stock || 0)) <= 5
+                      : Number(p.stock || 0)) <= 5,
                 )
                 .slice(0, 6).length === 0 ? (
                 <p className="text-sm text-gray-500">No low stock items</p>
@@ -554,7 +518,7 @@ const Lists = () => {
                       (p) =>
                         (typeof p.stock === "number"
                           ? p.stock
-                          : Number(p.stock || 0)) <= 5
+                          : Number(p.stock || 0)) <= 5,
                     )
                     .sort((a, b) => (a.stock || 0) - (b.stock || 0))
                     .slice(0, 6)
@@ -587,9 +551,7 @@ const Lists = () => {
         </div>
       )}
 
-      {/* Main content: table for md+ and mobile cards for small */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        {/* Desktop / Tablet Table */}
         <div
           id="admin-product-table"
           className="hidden sm:block overflow-x-auto"
@@ -631,8 +593,8 @@ const Lists = () => {
                   stock <= 0
                     ? "bg-red-100 text-red-700"
                     : stock <= 5
-                    ? "bg-yellow-100 text-yellow-700"
-                    : "bg-green-100 text-green-700";
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-green-100 text-green-700";
                 return (
                   <tr
                     key={item._id}
@@ -693,7 +655,6 @@ const Lists = () => {
           </table>
         </div>
 
-        {/* Mobile card list */}
         <div className="sm:hidden p-3 space-y-3">
           {paged.map((item, index) => {
             const stock =
@@ -704,8 +665,8 @@ const Lists = () => {
               stock <= 0
                 ? "bg-red-100 text-red-700"
                 : stock <= 5
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-green-100 text-green-700";
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-green-100 text-green-700";
             return (
               <div
                 key={item._id}

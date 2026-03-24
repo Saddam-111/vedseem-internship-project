@@ -3,11 +3,11 @@ import Product from '../models/product.model.js';
 import crypto from 'crypto';
 import { razorpayInstance } from '../config/razorpay.js';
 
-// ✅ Create COD Order
+
 export const createOrder = async (req, res) => {
   try {
     const { items, address, paymentMethod } = req.body;
-    const userId = req.userId; // from auth middleware
+    const userId = req.userId; 
 
     console.log("=== CREATE ORDER DEBUG ===");
     console.log("UserId:", userId);
@@ -15,7 +15,7 @@ export const createOrder = async (req, res) => {
     console.log("Address:", address);
     console.log("Payment method:", paymentMethod);
 
-    // ✅ Validate required fields
+  
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ 
         message: "Items array is required and cannot be empty" 
@@ -34,7 +34,7 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    // ✅ Validate and fetch product details
+   
     const orderItems = [];
     let totalAmount = 0;
 
@@ -58,7 +58,7 @@ export const createOrder = async (req, res) => {
 
       console.log(`Found product:`, product.name);
 
-      // ✅ FIXED: Handle image structure properly
+      
       let imageData;
       if (item.image) {
         // If item.image is a string (URL)
@@ -68,14 +68,14 @@ export const createOrder = async (req, res) => {
             publicId: ""
           };
         }
-        // If item.image is an object with url property
+        
         else if (item.image.url) {
           imageData = {
             url: item.image.url,
             publicId: item.image.publicId || ""
           };
         }
-        // If item.image is an object but no url property
+       
         else {
           imageData = {
             url: item.image,
@@ -83,7 +83,7 @@ export const createOrder = async (req, res) => {
           };
         }
       }
-      // Fallback to product image
+      
       else if (product.image) {
         if (typeof product.image === 'string') {
           imageData = {
@@ -97,7 +97,7 @@ export const createOrder = async (req, res) => {
           };
         }
       }
-      // Default fallback
+     
       else {
         imageData = {
           url: "https://via.placeholder.com/150",
@@ -107,16 +107,16 @@ export const createOrder = async (req, res) => {
 
       console.log(`Image data for item ${i}:`, imageData);
 
-      // ✅ Build order item with customization
+      
       const orderItem = {
         productId: product._id,
         name: item.name || product.name,
         quantity: item.quantity || 1,
         price: item.price || product.price,
-        image: imageData, // ✅ Properly structured image object
+        image: imageData, 
       };
 
-      // ✅ Add customization if present
+     
       if (item.customization) {
         console.log("Adding customization:", item.customization);
         orderItem.customization = item.customization;
@@ -129,7 +129,6 @@ export const createOrder = async (req, res) => {
     console.log("Final order items:", JSON.stringify(orderItems, null, 2));
     console.log("Total amount:", totalAmount);
 
-    // ✅ Create order
     const newOrder = new Order({
       userId,
       items: orderItems,
@@ -158,7 +157,7 @@ export const createOrder = async (req, res) => {
     });
   }
 };
-// ✅ Get logged-in user's orders
+
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.userId })
@@ -175,7 +174,7 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-// ✅ Cancel order
+
 export const cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -203,7 +202,7 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-// ✅ Get all orders (Admin only)
+
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -218,7 +217,7 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// ✅ Update order status (Admin)
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -238,7 +237,7 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-// ✅ Create Razorpay Order (before checkout)
+
 export const createRazorpayOrder = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -248,7 +247,7 @@ export const createRazorpayOrder = async (req, res) => {
     }
 
     const options = {
-      amount: amount * 100, // Razorpay works in paise
+      amount: amount * 100, 
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     };
@@ -267,7 +266,7 @@ export const createRazorpayOrder = async (req, res) => {
   }
 };
 
-// ✅ Verify Razorpay Payment
+
 export const verifyRazorpayPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderData } = req.body;
@@ -276,7 +275,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       return res.status(400).json({ message: "Missing payment details" });
     }
 
-    // ✅ Verify signature
+    
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -287,7 +286,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       return res.status(400).json({ message: "Invalid payment signature" });
     }
 
-    // ✅ Process order items with customization
+  
     const enrichedItems = [];
     let totalAmount = 0;
 
@@ -307,7 +306,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         image: item.image || product.image,
       };
 
-      // ✅ Add customization if present
+      
       if (item.customization) {
         orderItem.customization = item.customization;
       }
@@ -316,7 +315,7 @@ export const verifyRazorpayPayment = async (req, res) => {
       totalAmount += orderItem.price * orderItem.quantity;
     }
 
-    // ✅ Create order
+    
     const newOrder = await Order.create({
       userId: req.userId,
       items: enrichedItems,

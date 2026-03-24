@@ -12,7 +12,7 @@ export const addReview = async (req, res) => {
   const product = await Product.findById(productId);
   if (!product) return res.status(404).json({ message: "Product not found" });
 
-  // Prevent multiple reviews by same user
+ 
   const alreadyReviewed = product.reviews.find(
     (r) => r.userId.toString() === userId.toString()
   );
@@ -21,8 +21,7 @@ export const addReview = async (req, res) => {
     return res.status(400).json({ message: "You already reviewed this product" });
   }
 
-  // Fetch user name
-  const user = req.user; // from isAuth middleware
+  const user = req.user; 
 
   const review = {
     userId,
@@ -33,7 +32,6 @@ export const addReview = async (req, res) => {
 
   product.reviews.push(review);
 
-  // Recalculate rating
   product.numReviews = product.reviews.length;
   product.rating =
     product.reviews.reduce((acc, item) => item.rating + acc, 0) /

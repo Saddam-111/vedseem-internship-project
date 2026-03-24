@@ -25,7 +25,6 @@ const ProductDetails = () => {
   const [rating, setRating] = useState("");
   const [comment, setComment] = useState("");
 
-  // ⭐ Fetch Reviews
   useEffect(() => {
     if (!product) return;
 
@@ -45,13 +44,12 @@ const ProductDetails = () => {
     );
   }
 
-  // ⭐ Add to Cart
+  
   const handleAddToCart = async () => {
     const formData = new FormData();
     formData.append("productId", product._id);
     formData.append("quantity", quantity);
 
-    // 🔥 FIXED — using product.isCustomizable everywhere
     if (product.isCustomizable) {
       formData.append("customText", customText);
       if (customImage) formData.append("customImage", customImage);
@@ -99,7 +97,7 @@ const ProductDetails = () => {
               </span>
             </p>
 
-            {/* ⭐ FIXED CUSTOMIZATION SECTION */}
+            {/*  FIXED CUSTOMIZATION SECTION */}
             {product.isCustomizable && (
               <div className="mt-3 p-5 rounded-xl border border-pink-200 bg-pink-50 shadow-sm">
                 <h3 className="text-lg font-bold text-pink-700 mb-3">
@@ -179,7 +177,7 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {/* ⭐ REVIEWS SECTION */}
+        {/*  REVIEWS SECTION */}
         <div className="mt-14 bg-white p-6 rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
 
@@ -204,18 +202,19 @@ const ProductDetails = () => {
           <div className="mt-8">
             <h3 className="font-bold mb-3">Write a Review</h3>
 
-            <select
-              value={rating}
-              onChange={(e) => setRating(Number(e.target.value))}
-              className="border rounded-lg p-2 mb-3"
-            >
-              <option value="">Select Rating</option>
-              <option value="1">⭐</option>
-              <option value="2">⭐⭐</option>
-              <option value="3">⭐⭐⭐</option>
-              <option value="4">⭐⭐⭐⭐</option>
-              <option value="5">⭐⭐⭐⭐⭐</option>
-            </select>
+            <div className="flex gap-1 mb-3">
+  {[1, 2, 3, 4, 5].map((star) => (
+    <span
+      key={star}
+      onClick={() => setRating(star)}
+      className={`cursor-pointer text-2xl transition-transform duration-200 ${
+        star <= rating ? "text-yellow-400 scale-110" : "text-gray-300"
+      } hover:scale-125`}
+    >
+      ★
+    </span>
+  ))}
+</div>
 
             <textarea
               value={comment}

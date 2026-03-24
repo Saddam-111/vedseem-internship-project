@@ -24,7 +24,6 @@ const Checkout = () => {
   const [location, setLocation] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cod");
 
-  // ✅ Get user current location & reverse geocode using OpenStreetMap (Nominatim)
   useEffect(() => {
     if (useCurrentLocation && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -37,7 +36,7 @@ const Checkout = () => {
 
           try {
             const { data } = await axios.get(
-              `${baseUrl}/api/v1/location/geocode`, // Call your backend
+              `${baseUrl}/api/v1/location/geocode`, 
               {
                 params: {
                   lat: coords.lat,
@@ -72,7 +71,6 @@ const Checkout = () => {
     }
   }, [useCurrentLocation, baseUrl]);
 
-  // ✅ Helper function to normalize image data
   const normalizeImageData = (image) => {
     if (!image) {
       return {
@@ -101,20 +99,16 @@ const Checkout = () => {
     };
   };
 
-  // ✅ Place COD order (direct to backend)
   const handleCOD = async () => {
     try {
-      // ✅ Debug: Log the cart structure
+   
       console.log("Raw cart data:", cart);
       
-      // ✅ FIXED: Properly map cart items with all required fields
       const itemsForOrder = cart.map(item => {
-        console.log("Processing cart item:", item); // Debug each item
-        
-        // ✅ Handle different cart item structures
+        console.log("Processing cart item:", item); 
+ 
         const productId = item.product?._id || item.product || item.productId;
         
-        // ✅ FIXED: Handle image structure properly using helper function
         const imageData = normalizeImageData(item.image);
         
         return {
@@ -122,8 +116,8 @@ const Checkout = () => {
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          image: imageData, // ✅ Properly structured image object
-          customization: item.customization || undefined, // ✅ Include customization
+          image: imageData,
+          customization: item.customization || undefined, 
         };
       });
 
@@ -141,21 +135,21 @@ const Checkout = () => {
       );
 
       console.log("Order:", data);
-      alert("✅ Order placed successfully!");
+      alert(" Order placed successfully!");
       clearCart();
       navigate("/orders");
     } catch (error) {
       console.error("COD order error:", error.response?.data || error);
-      alert("❌ Failed to place order. Please try again.");
+      alert(" Failed to place order. Please try again.");
     }
   };
 
-  // ✅ Place Razorpay order
+ 
   const handleRazorpay = async () => {
     try {
-      // ✅ Normalize cart items to always have productId
+     
       const normalizedItems = cart.map(item => {
-        // ✅ Handle image structure properly using helper function
+      
         const imageData = normalizeImageData(item.image);
 
         return {
@@ -163,8 +157,8 @@ const Checkout = () => {
           name: item.name,
           quantity: item.quantity,
           price: item.price,
-          image: imageData, // ✅ Properly structured image object
-          customization: item.customization || undefined, // ✅ Include customization
+          image: imageData, 
+          customization: item.customization || undefined, 
         };
       });
 
@@ -173,14 +167,14 @@ const Checkout = () => {
         0
       );
 
-      // Step 1: Create order in backend (Razorpay order)
+      
       const { data: order } = await axios.post(
         `${baseUrl}/api/v1/order/razorpay/order`,
         { amount },
         { withCredentials: true }
       );
 
-      // Step 2: Razorpay checkout
+      
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
@@ -205,13 +199,13 @@ const Checkout = () => {
               { withCredentials: true }
             );
 
-            alert("✅ Payment Successful & Order Placed!");
+            alert(" Payment Successful & Order Placed!");
             console.log("Order:", verifyRes.data);
             clearCart();
             navigate("/orders");
           } catch (err) {
             console.error("Payment verification failed:", err);
-            alert("❌ Payment verification failed");
+            alert(" Payment verification failed");
           }
         },
         prefill: {
@@ -226,12 +220,12 @@ const Checkout = () => {
       razor.open();
     } catch (error) {
       console.error("Razorpay error:", error);
-      alert("❌ Failed to initiate Razorpay payment");
+      alert(" Failed to initiate Razorpay payment");
     }
   };
 
   const handlePlaceOrder = () => {
-    // ✅ Validate required fields
+    //  Validate required fields
     if (!address.firstName || !address.phone || !address.street || !address.city) {
       alert("Please fill in all required address fields");
       return;
@@ -341,7 +335,7 @@ const Checkout = () => {
 
           {useCurrentLocation && location && (
             <p className="text-sm text-green-600 mt-3">
-              📍 {address.street}, {address.city}, {address.state} - {address.pincode}
+               {address.street}, {address.city}, {address.state} - {address.pincode}
             </p>
           )}
         </div>

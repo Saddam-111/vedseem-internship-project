@@ -3,10 +3,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import dotenv from 'dotenv'
 import fs from 'fs'
 
-
 dotenv.config()
-
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -20,8 +17,8 @@ export const uploadCloudinary = async (file, folder) => {
     const result = await cloudinary.uploader.upload(file, {
       resource_type: "image",
       folder: `dhanush_ecommerce/${folder}`,
-      quality: "100",       // full quality
-      fetch_format: "auto", // optimal format without loss
+      quality: "100",
+      fetch_format: "auto",
     });
 
     if (fs.existsSync(file)) fs.unlinkSync(file);
@@ -32,15 +29,6 @@ export const uploadCloudinary = async (file, folder) => {
     throw new Error("Failed to upload to Cloudinary");
   }
 };
-
-
-
-// const uploadResult = await uploadCloudinary(req.file.path, "avatars");
-// const uploadResult = await uploadCloudinary(req.file.path, "products");
-// const uploadResult = await uploadCloudinary(req.file.path, "blogs");
-
-
-
 
 export const deleteCloudinary = async (publicId) => {
   try {

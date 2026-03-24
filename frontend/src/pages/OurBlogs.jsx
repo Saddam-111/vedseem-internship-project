@@ -1,14 +1,13 @@
 import React, { useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ProductDataContext } from '../context/ProductContext'; // Import your context
+import { ProductDataContext } from '../context/ProductContext'; 
 
 const OurBlogs = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { blogData } = useContext(ProductDataContext); // Get real blog data
+  const { blogData } = useContext(ProductDataContext); 
 
-  // Find the blog by id from fetched data
   const blog = blogData.find(b => b._id === id);
 
   if (!blog)
@@ -16,7 +15,7 @@ const OurBlogs = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
-      {/* Back Button */}
+      
       <button
         onClick={() => navigate(-1)}
         className="mb-8 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition flex items-center gap-2"
@@ -24,7 +23,6 @@ const OurBlogs = () => {
         ← Back
       </button>
 
-      {/* Blog Content */}
       <div className="flex flex-col md:flex-row bg-white shadow-lg rounded-xl overflow-hidden">
         {/* Left: Cover Image */}
         <div className="md:w-1/2 h-64 md:h-auto overflow-hidden">
@@ -35,14 +33,13 @@ const OurBlogs = () => {
           />
         </div>
 
-        {/* Right: Text Content */}
         <div className="md:w-1/2 p-6 flex flex-col justify-between">
-          {/* Title */}
+          
           <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
             {blog.title}
           </h1>
 
-          {/* Metadata */}
+         
           <div className="flex flex-wrap gap-4 text-gray-500 mb-6">
             <span className="text-sm">Published: <span className="font-medium">{new Date(blog.createdAt).toLocaleDateString()}</span></span>
             <span className="text-sm">Author: <span className="font-medium">{blog.author || "Admin"}</span></span>

@@ -19,7 +19,7 @@ const Products = () => {
   const [sortOrder, setSortOrder] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
-  // dropdown open/close states
+ 
   const [openDropdown, setOpenDropdown] = useState(null);
 
   // ---------------- Filtering ----------------
@@ -59,7 +59,7 @@ const Products = () => {
     );
   }
 
-  // ✅ Helper to format category name
+
   const formatName = (name) => {
     if (!name) return "All Products";
     return name
@@ -68,7 +68,7 @@ const Products = () => {
       .join(" ");
   };
 
-  // ✅ Dropdown component
+
   const Dropdown = ({ label, value, options, onChange, id }) => (
     <div className="relative w-full sm:w-auto">
       <button

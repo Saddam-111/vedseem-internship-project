@@ -9,7 +9,7 @@ export const getDashboardStats = async (req, res) => {
     const totalBlogs = await Blog.countDocuments();
     const totalOrders = await Order.countDocuments();
     const totalRevenue = await Order.aggregate([
-      { $match: { payment: true } }, // only paid orders
+      { $match: { payment: true } },
       { $group: { _id: null, revenue: { $sum: "$amount" } } },
     ]);
 
@@ -28,21 +28,20 @@ export const getDashboardStats = async (req, res) => {
 
 
 
-// Monthly Revenue Stats
+
 export const getRevenueByMonth = async (req, res) => {
   try {
     const monthlyRevenue = await Order.aggregate([
-      { $match: { payment: true } }, // only paid orders
+      { $match: { payment: true } }, 
       {
         $group: {
           _id: { $month: "$createdAt" },
           totalRevenue: { $sum: "$amount" },
         },
       },
-      { $sort: { "_id": 1 } }, // sort by month
+      { $sort: { "_id": 1 } }, 
     ]);
 
-    // Format months (1-12 → Jan-Dec)
     const months = [
       "Jan","Feb","Mar","Apr","May","Jun",
       "Jul","Aug","Sep","Oct","Nov","Dec"

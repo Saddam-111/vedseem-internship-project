@@ -3,7 +3,6 @@ import { Bar } from "react-chartjs-2";
 import axios from "axios";
 import { AuthDataContext } from "../context/AuthContext";
 
-// ✅ Import Chart.js and required components
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,8 +13,14 @@ import {
   Legend,
 } from "chart.js";
 
-// ✅ Register the components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 const RevenueChart = () => {
   const [chartData, setChartData] = useState(null);
@@ -61,7 +66,10 @@ const RevenueChart = () => {
           responsive: true,
           plugins: {
             legend: { position: "top" },
-            title: { display: true, text: "Revenue by Month (Paid Orders Only)" },
+            title: {
+              display: true,
+              text: "Revenue by Month (Paid Orders Only)",
+            },
           },
         }}
       />

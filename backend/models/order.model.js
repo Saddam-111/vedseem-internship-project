@@ -148,7 +148,6 @@ const orderSchema = new mongoose.Schema(
       default: Date.now,
     },
 
-    // Additional fields for better order management
     estimatedDelivery: {
       type: Date
     },
@@ -181,7 +180,6 @@ const orderSchema = new mongoose.Schema(
   },
   { 
     timestamps: true,
-    // Add indexes for better query performance
     indexes: [
       { userId: 1, createdAt: -1 },
       { status: 1 },
@@ -191,38 +189,34 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save middleware to calculate estimated delivery
 orderSchema.pre('save', function(next) {
   if (this.isNew && !this.estimatedDelivery) {
-    // Set estimated delivery to 7 days from order date for COD, 5 days for online payment
+   
     const deliveryDays = this.paymentMethod === 'COD' ? 7 : 5;
     this.estimatedDelivery = new Date(Date.now() + deliveryDays * 24 * 60 * 60 * 1000);
   }
   next();
 });
 
-// Instance method to check if order can be cancelled
 orderSchema.methods.canBeCancelled = function() {
   return ['Order Placed', 'Processing'].includes(this.status);
 };
 
-// Instance method to check if order can be returned
 orderSchema.methods.canBeReturned = function() {
   return this.status === 'Delivered' && 
          (Date.now() - this.updatedAt.getTime()) <= (7 * 24 * 60 * 60 * 1000); // 7 days
 };
 
-// Static method to get orders by status
+
 orderSchema.statics.getOrdersByStatus = function(status) {
   return this.find({ status }).populate('userId', 'firstName lastName email');
 };
 
-// Virtual for order total items count
 orderSchema.virtual('totalItems').get(function() {
   return this.items.reduce((total, item) => total + item.quantity, 0);
 });
 
-// Virtual for formatted order date
+
 orderSchema.virtual('formattedDate').get(function() {
   return new Date(this.date).toLocaleDateString('en-IN', {
     year: 'numeric',
@@ -233,7 +227,6 @@ orderSchema.virtual('formattedDate').get(function() {
   });
 });
 
-// Ensure virtuals are included in JSON output
 orderSchema.set('toJSON', { virtuals: true });
 orderSchema.set('toObject', { virtuals: true });
 

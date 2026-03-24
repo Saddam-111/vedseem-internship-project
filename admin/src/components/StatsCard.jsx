@@ -44,7 +44,9 @@ const StatsCard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">{card.title}</p>
-              <p className="text-2xl font-bold mt-1 text-gray-900">{card.value}</p>
+              <p className="text-2xl font-bold mt-1 text-gray-900">
+                {card.value}
+              </p>
               <p className="text-sm mt-1 text-green-600">{card.change}</p>
             </div>
             <div className={`${card.color} p-3 rounded-lg`}>

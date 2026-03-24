@@ -16,7 +16,7 @@ export const getGeocode = async (req, res) => {
         addressdetails: 1,
       },
       headers: {
-        "User-Agent": "YourAppName/1.0 (your@email.com)" // required by Nominatim
+        "User-Agent": "YourAppName/1.0 (your@email.com)"
       }
     });
 

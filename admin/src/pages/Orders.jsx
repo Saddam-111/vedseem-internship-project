@@ -1,4 +1,3 @@
-// src/pages/admin/AdminOrders.jsx
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AuthDataContext } from "../context/AuthContext";
@@ -87,17 +86,14 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseUrl]);
 
-  // refresh wrapper
   const refresh = async () => {
     setIsRefreshing(true);
     await fetchOrders();
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
-  // search + filter + date + payment + status + sort
   const filteredSortedOrders = orders
     .filter((order) => {
       const q = searchTerm.trim().toLowerCase();
@@ -147,7 +143,6 @@ const Orders = () => {
       return 0;
     });
 
-  // pagination
   const totalItems = filteredSortedOrders.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   useEffect(() => {
@@ -156,10 +151,9 @@ const Orders = () => {
 
   const paginated = filteredSortedOrders.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
-  // CSV export
   const exportCSV = () => {
     const rows = filteredSortedOrders.map((o) => ({
       id: o._id,
@@ -184,7 +178,7 @@ const Orders = () => {
       .map((r) =>
         Object.values(r)
           .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-          .join(",")
+          .join(","),
       )
       .join("\n");
     const csv = csvHeader + csvBody;
@@ -200,7 +194,6 @@ const Orders = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Print invoice / open printable window for an order
   const printInvoice = (order) => {
     const html = `
       <html>
@@ -221,14 +214,14 @@ const Orders = () => {
               <h2>Invoice</h2>
               <div>Order#: ${order._id}</div>
               <div>Date: ${new Date(order.createdAt).toLocaleString(
-                "en-IN"
+                "en-IN",
               )}</div>
             </div>
             <div>
               <div>Customer:</div>
               <div>${order.address?.firstName || ""} ${
-      order.address?.lastName || ""
-    }</div>
+                order.address?.lastName || ""
+              }</div>
               <div>${order.address?.phone || ""}</div>
             </div>
           </div>
@@ -257,7 +250,7 @@ const Orders = () => {
                       : "—"
                   }</td>
                 </tr>
-              `
+              `,
                 )
                 .join("")}
             </tbody>
@@ -283,13 +276,12 @@ const Orders = () => {
     w.document.close();
   };
 
-  // Update status (admin)
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await axios.put(
         `${baseUrl}/api/v1/order/status/${orderId}`,
         { status: newStatus },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       await fetchOrders();
     } catch (err) {
@@ -302,7 +294,6 @@ const Orders = () => {
 
   return (
     <div className="max-w-8xl mx-auto p-4 md:p-6">
-      {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Admin Orders</h1>
@@ -330,7 +321,6 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Filters (responsive grid) */}
       <div className="bg-white rounded-lg p-4 shadow mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {/* Search full width */}
@@ -450,7 +440,6 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Orders list */}
       {loading ? (
         <div className="text-center py-16">Loading orders...</div>
       ) : (
@@ -468,9 +457,7 @@ const Orders = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-white rounded-lg shadow border p-4"
                 >
-                  {/* OC2: Left (customer) / Right (items + actions) */}
                   <div className="flex flex-col md:flex-row gap-4">
-                    {/* LEFT: Customer summary */}
                     <div className="md:w-1/3 flex flex-col gap-3">
                       <div className="flex items-center gap-3">
                         <div className="text-2xl">
@@ -493,7 +480,7 @@ const Orders = () => {
                       <div className="bg-blue-50 p-3 rounded text-sm">
                         <div
                           className={`inline-block px-3 py-1 rounded-full text-sm ${statusBadgeClass(
-                            order.status
+                            order.status,
                           )}`}
                         >
                           {order.status}
@@ -523,7 +510,6 @@ const Orders = () => {
                       </div>
                     </div>
 
-                    {/* RIGHT: Items and actions */}
                     <div className="md:w-2/3 flex flex-col gap-3">
                       <div className="space-y-2">
                         {order.items.map((it, i) => (
@@ -618,7 +604,6 @@ const Orders = () => {
             )}
           </div>
 
-          {/* Pagination */}
           <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="text-sm text-gray-600">
               Showing{" "}
@@ -639,7 +624,6 @@ const Orders = () => {
                 {Array.from({ length: totalPages }).map((_, i) => {
                   const page = i + 1;
                   if (totalPages > 7) {
-                    // Render a compact pagination for long lists: show first, last, current neighborhood
                     if (
                       page === 1 ||
                       page === totalPages ||

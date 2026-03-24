@@ -41,7 +41,6 @@ const subCategoryOptions = [
   { value: "wellness-selfcare", label: "Wellness & Self-Care" },
 ];
 
-/* Dropdown component unchanged (copy from yours) */
 const Dropdown = ({ options, value, setValue, label, disabled }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -134,7 +133,6 @@ const Add = () => {
       formData.append("category", category);
       formData.append("stock", stock);
       formData.append("subCategory", subCategory);
-      // IMPORTANT: send isCustomizable as string so backend parseBoolean handles it
       formData.append("isCustomizable", isCustomizable ? "true" : "false");
       if (image) formData.append("image", image);
 
@@ -144,7 +142,7 @@ const Add = () => {
         {
           withCredentials: true,
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       alert("Product added successfully!");
@@ -160,7 +158,7 @@ const Add = () => {
     } catch (error) {
       console.error("Add product error:", error);
       setErrorMsg(
-        error.response?.data?.message || "Failed to add product. Try again."
+        error.response?.data?.message || "Failed to add product. Try again.",
       );
     } finally {
       setLoading(false);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Package, Clock, ShoppingCart } from "lucide-react";
 
-// ✅ Dummy orders instead of backend
 const dummyOrders = [
   {
     _id: "1",
@@ -91,14 +90,17 @@ const RecentOrders = () => {
                   <p className="text-xs text-gray-500">{order.customer}</p>
                 </div>
               </div>
-              <span className={`text-sm font-medium ${getStatusColor(order.status)}`}>
+              <span
+                className={`text-sm font-medium ${getStatusColor(order.status)}`}
+              >
                 {order.status}
               </span>
             </div>
 
             {/* Items + Amount */}
             <p className="text-sm text-gray-600 mb-3">
-              {order.items} item(s) • <span className="font-semibold">{order.amount}</span>
+              {order.items} item(s) •{" "}
+              <span className="font-semibold">{order.amount}</span>
             </p>
 
             {/* Footer */}

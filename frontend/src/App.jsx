@@ -28,7 +28,6 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        {/* ---------- Public Routes ---------- */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/category/:category" element={<Products />} />
@@ -40,10 +39,8 @@ const App = () => {
         <Route path="/item/:slug" element={<ItemDetails />} />
         <Route path="/read-blogs/:id" element={<OurBlogs />} />
 
-        {/* ---------- Cart Routes ---------- */}
         <Route path="/my-cart" element={<Cart />} />
 
-        {/* ---------- Auth Routes ---------- */}
         <Route
           path="/signup"
           element={!userData ? <Signup /> : <Navigate to="/" replace />}
@@ -57,7 +54,6 @@ const App = () => {
           element={!userData ? <ForgotPassword /> : <Navigate to="/" replace />}
         />
 
-        {/* ---------- Protected Routes ---------- */}
         <Route
           path="/checkout"
           element={userData ? <Checkout /> : <Navigate to="/login" replace />}
@@ -67,7 +63,6 @@ const App = () => {
           element={userData ? <Orders /> : <Navigate to="/login" replace />}
         />
 
-        {/* ---------- Fallback ---------- */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

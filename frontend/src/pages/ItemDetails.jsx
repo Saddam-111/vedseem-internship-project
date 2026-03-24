@@ -6,7 +6,6 @@ const ItemDetails = () => {
   const { slug } = useParams();
   const { items } = useContext(ItemDataContext);
 
-  // Find the item by slug
   const item = items.find((i) => i.slug === slug);
 
   if (!item) {
