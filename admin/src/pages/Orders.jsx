@@ -10,7 +10,209 @@ import {
   FaFileCsv,
   FaPrint,
 } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+const AnimatedSelect = ({ value, onChange, options, placeholder, className, onValueChange }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative w-full">
+      <div
+        onClick={() => setOpen(!open)}
+        className={`border p-2.5 rounded-lg cursor-pointer flex justify-between items-center bg-white transition-all duration-200 hover:border-yellow-400 hover:shadow-md ${className}`}
+      >
+        <span className={value ? "text-gray-800 text-sm" : "text-gray-400 text-sm"}>
+          {options.find((opt) => opt.value === value)?.label || placeholder || "Select"}
+        </span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400 text-xs"
+        >
+          ▼
+        </motion.span>
+      </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 overflow-hidden shadow-xl"
+          >
+            {options.map((opt, index) => (
+              <motion.div
+                key={opt.value}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
+                onClick={() => {
+                  onChange(opt.value);
+                  if (onValueChange) onValueChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`px-3 py-2.5 cursor-pointer transition-colors hover:bg-yellow-50 hover:text-yellow-700 text-sm ${
+                  value === opt.value
+                    ? "bg-yellow-50 text-yellow-700 font-medium"
+                    : "text-gray-700"
+                }`}
+              >
+                {opt.label}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const AnimatedDatePicker = ({ value, onChange, label, className }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currentYear = new Date().getFullYear();
+  
+  const months = [
+    { value: "01", label: "January" },
+    { value: "02", label: "February" },
+    { value: "03", label: "March" },
+    { value: "04", label: "April" },
+    { value: "05", label: "May" },
+    { value: "06", label: "June" },
+    { value: "07", label: "July" },
+    { value: "08", label: "August" },
+    { value: "09", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const currentDate = value ? new Date(value) : new Date();
+  const [selectedMonth, setSelectedMonth] = useState(
+    String(currentDate.getMonth() + 1).padStart(2, "0")
+  );
+  const [selectedYear, setSelectedYear] = useState(String(currentDate.getFullYear()));
+
+  const daysInMonth = new Date(
+    parseInt(selectedYear),
+    parseInt(selectedMonth),
+    0
+  ).getDate();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const handleApply = () => {
+    const day = document.getElementById(`day-${label}`)?.value;
+    if (day) {
+      onChange(`${selectedYear}-${selectedMonth}-${day.padStart(2, "0")}`);
+    }
+    setIsOpen(false);
+  };
+
+  const handleClear = () => {
+    onChange("");
+    setIsOpen(false);
+  };
+
+  return (
+    <div className={`relative ${className}`}>
+      <label className={`text-xs ${label === "From" ? "text-blue-600" : "text-red-600"}`}>
+        {label}
+      </label>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="border p-2.5 rounded-lg cursor-pointer flex justify-between items-center bg-white transition-all duration-200 hover:border-yellow-400 hover:shadow-md"
+      >
+        <span className={value ? "text-gray-800 text-sm" : "text-gray-400 text-sm"}>
+          {value ? new Date(value).toLocaleDateString("en-IN") : `Select ${label}`}
+        </span>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400 text-xs"
+        >
+          ▼
+        </motion.span>
+      </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 overflow-hidden shadow-xl p-3"
+          >
+            <div className="flex gap-2 mb-3">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="border p-1.5 rounded text-sm flex-1"
+              >
+                {months.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="border p-1.5 rounded text-sm w-20"
+              >
+                {Array.from({ length: 10 }, (_, i) => currentYear - 5 + i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-3">
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                <div key={i} className="text-center text-xs font-medium text-gray-500">
+                  {d}
+                </div>
+              ))}
+              {Array.from({ length: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).getDay() }).map((_, i) => (
+                <div key={`empty-${i}`} />
+              ))}
+              {days.map((day) => (
+                <motion.button
+                  key={day}
+                  id={`day-${label}`}
+                  type="button"
+                  value={day}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    onChange(`${selectedYear}-${selectedMonth}-${day.toString().padStart(2, "0")}`);
+                    setIsOpen(false);
+                  }}
+                  className="p-1.5 text-sm rounded hover:bg-yellow-50 hover:text-yellow-700 transition-colors"
+                >
+                  {day}
+                </motion.button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleClear}
+                className="flex-1 py-1.5 text-sm border rounded hover:bg-gray-50"
+              >
+                Clear
+              </button>
+              <button
+                onClick={handleApply}
+                className="flex-1 py-1.5 text-sm bg-yellow-400 text-black rounded hover:bg-yellow-500"
+              >
+                Apply
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const statusBadgeClass = (status) => {
   switch (status) {
@@ -292,6 +494,49 @@ const Orders = () => {
 
   const fmtDate = (d) => new Date(d).toLocaleString("en-IN");
 
+  const paymentOptions = [
+    { value: "all", label: "All Payments" },
+    { value: "paid", label: "Paid" },
+    { value: "unpaid", label: "Unpaid" },
+    { value: "delivered", label: "Delivered" },
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "All Status" },
+    { value: "Order Placed", label: "Order Placed" },
+    { value: "Processing", label: "Processing" },
+    { value: "Shipped", label: "Shipped" },
+    { value: "Out for Delivery", label: "Out for Delivery" },
+    { value: "Delivered", label: "Delivered" },
+    { value: "Cancelled", label: "Cancelled" },
+    { value: "Returned", label: "Returned" },
+  ];
+
+  const sortOptions = [
+    { value: "date_desc", label: "Date (new → old)" },
+    { value: "date_asc", label: "Date (old → new)" },
+    { value: "amount_desc", label: "Amount (high → low)" },
+    { value: "amount_asc", label: "Amount (low → high)" },
+    { value: "status", label: "Status (A → Z)" },
+  ];
+
+  const perPageOptions = [
+    { value: 5, label: "5 / page" },
+    { value: 8, label: "8 / page" },
+    { value: 12, label: "12 / page" },
+    { value: 20, label: "20 / page" },
+  ];
+
+  const statusChangeOptions = [
+    { value: "Order Placed", label: "Order Placed" },
+    { value: "Processing", label: "Processing" },
+    { value: "Shipped", label: "Shipped" },
+    { value: "Out for Delivery", label: "Out for Delivery" },
+    { value: "Delivered", label: "Delivered" },
+    { value: "Cancelled", label: "Cancelled" },
+    { value: "Returned", label: "Returned" },
+  ];
+
   return (
     <div className="max-w-8xl mx-auto p-4 md:p-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-6">
@@ -338,104 +583,112 @@ const Orders = () => {
           </div>
 
           <div>
-            <motion.select
+            <AnimatedSelect
               value={paymentFilter}
-              onChange={(e) => {
-                setPaymentFilter(e.target.value);
+              onChange={(val) => {
+                setPaymentFilter(val);
                 setCurrentPage(1);
               }}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.12 }}
-              className="w-full border rounded-lg p-2"
-            >
-              <option value="all">All Payments</option>
-              <option value="paid">Paid</option>
-              <option value="unpaid">Unpaid</option>
-              <option value="delivered">Delivered</option>
-            </motion.select>
+              options={paymentOptions}
+              placeholder="All Payments"
+              className="w-full border rounded-lg"
+            />
           </div>
 
           <div>
-            <motion.select
+            <AnimatedSelect
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
+              onChange={(val) => {
+                setStatusFilter(val);
                 setCurrentPage(1);
               }}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.14 }}
-              className="w-full border rounded-lg p-2"
-            >
-              <option value="all">All Status</option>
-              <option value="Order Placed">Order Placed</option>
-              <option value="Processing">Processing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Out for Delivery">Out for Delivery</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Returned">Returned</option>
-            </motion.select>
+              options={statusOptions}
+              placeholder="All Status"
+              className="w-full border rounded-lg"
+            />
           </div>
 
           <div>
-            <select
+            <AnimatedSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full border rounded-lg p-2"
-            >
-              <option value="date_desc">Date (new → old)</option>
-              <option value="date_asc">Date (old → new)</option>
-              <option value="amount_desc">Amount (high → low)</option>
-              <option value="amount_asc">Amount (low → high)</option>
-              <option value="status">Status (A → Z)</option>
-            </select>
+              onChange={setSortBy}
+              options={sortOptions}
+              placeholder="Sort"
+              className="w-full border rounded-lg"
+            />
           </div>
 
           <div>
             <label className="text-xs text-gray-600">Per page</label>
-            <select
+            <AnimatedSelect
               value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
+              onChange={(val) => {
+                setItemsPerPage(Number(val));
                 setCurrentPage(1);
               }}
-              className="w-full border rounded-lg p-2"
-            >
-              <option value={5}>5 / page</option>
-              <option value={8}>8 / page</option>
-              <option value={12}>12 / page</option>
-              <option value={20}>20 / page</option>
-            </select>
+              options={perPageOptions}
+              placeholder="Per page"
+              className="w-full border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <AnimatedSelect
+              value={statusFilter}
+              onChange={(val) => {
+                setStatusFilter(val);
+                setCurrentPage(1);
+              }}
+              options={statusOptions}
+              placeholder="All Status"
+              className="w-full border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <AnimatedSelect
+              value={sortBy}
+              onChange={setSortBy}
+              options={sortOptions}
+              placeholder="Sort"
+              className="w-full border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-600">Per page</label>
+            <AnimatedSelect
+              value={itemsPerPage}
+              onChange={(val) => {
+                setItemsPerPage(Number(val));
+                setCurrentPage(1);
+              }}
+              options={perPageOptions}
+              placeholder="Per page"
+              className="w-full border rounded-lg"
+            />
           </div>
 
           <div className=" flex flex-col md:flex-row gap-3">
-            <div className="flex-1">
-              <label className="text-xs text-blue-600">From</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
+            <AnimatedDatePicker
+              value={startDate}
+              onChange={(val) => {
+                setStartDate(val);
+                setCurrentPage(1);
+              }}
+              label="From"
+              className="flex-1"
+            />
 
-            <div className="flex-1">
-              <label className="text-xs text-red-600">To</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
+            <AnimatedDatePicker
+              value={endDate}
+              onChange={(val) => {
+                setEndDate(val);
+                setCurrentPage(1);
+              }}
+              label="To"
+              className="flex-1"
+            />
           </div>
         </div>
       </div>
@@ -568,21 +821,13 @@ const Orders = () => {
 
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between mt-2">
                         <div className="flex gap-2 items-center">
-                          <select
+                          <AnimatedSelect
                             value={order.status}
-                            onChange={(e) =>
-                              handleStatusChange(order._id, e.target.value)
-                            }
-                            className="border p-2 rounded-lg"
-                          >
-                            <option>Order Placed</option>
-                            <option>Processing</option>
-                            <option>Shipped</option>
-                            <option>Out for Delivery</option>
-                            <option>Delivered</option>
-                            <option>Cancelled</option>
-                            <option>Returned</option>
-                          </select>
+                            onChange={(val) => handleStatusChange(order._id, val)}
+                            options={statusChangeOptions}
+                            placeholder="Status"
+                            className="border rounded-lg min-w-[140px]"
+                          />
 
                           <button
                             onClick={() => printInvoice(order)}

@@ -12,7 +12,7 @@ export const register = async (req, res) => {
   try {
     const { email, firstName, lastName, password, confirmPassword } = req.body;
 
-    if (!email || !firstName || !lastName || !password || !confirmPassword) {
+    if (!email || !firstName || !password || !confirmPassword) {
       return res.status(400).json({
         message: "All fields are required"
       })
@@ -24,30 +24,32 @@ export const register = async (req, res) => {
       })
     }
 
-    //already exist
-    const alreadyExist = await User.findOne({ email })
-    if (alreadyExist) {
+    if (password.length < 6) {
       return res.status(400).json({
-        message: "Already exist"
+        message: "Password must be at least 6 characters"
       })
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({
-        message: "Password and Confirm Passwor doesn't match"
+        message: "Password and Confirm Password doesn't match"
       })
     }
 
-    //hash
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already registered"
+      })
+    }
 
-
+    const hashedPassword = await bcrypt.hash(password, 12)
 
     const user = await User.create({
-      firstName,
-      lastName,
+      firstName: firstName.trim(),
+      lastName: lastName ? lastName.trim() : '',
       password: hashedPassword,
-      email
+      email: email.toLowerCase().trim()
     })
 
     const token = await generateToken(user._id)
@@ -55,23 +57,30 @@ export const register = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       path: "/",
-      secure: true,
-      sameSite: "none",
-      maxAge: 3 * 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
 
-    return res.status(200).json({
-      user,
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      },
       token
     })
 
-
   } catch (error) {
+    console.error("Register error:", error);
     res.status(500).json({
       success: false,
-      message: "User Signup failed"
-
+      message: "User registration failed"
     })
   }
 }
@@ -79,48 +88,76 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body
+    
     if (!email || !password) {
       return res.status(400).json({
-        message: "All fields required"
+        success: false,
+        message: "Email and password are required"
       })
     }
 
     if (!validator.isEmail(email)) {
       return res.status(400).json({
-        message: "Invalid email"
-      })
-    }
-    //alreday exist
-    const user = await User.findOne({ email })
-    if (!user) {
-      return res.status(400).json({
-        message: "No user found with this email"
-      })
-    }
-    //compoare password
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      return res.status(400).json({
-        message: "Incorrect Password"
+        success: false,
+        message: "Invalid email format"
       })
     }
 
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      })
+    }
+
+    if (!user.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login with Google"
+      })
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+    
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      })
+    }
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
     const token = await generateToken(user._id);
+    
     res.cookie("token", token, {
       httpOnly: true,
       path: "/",
-      secure: true,
-      sameSite: "none",
-      maxAge: 3 * 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
     res.status(200).json({
-      user,
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      },
       token
     })
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({
-      message: "login failed"
+      success: false,
+      message: "Login failed"
     })
   }
 }
@@ -130,33 +167,68 @@ export const login = async (req, res) => {
 export const googleLogin = async (req, res) => {
   try {
     let { name, email } = req.body;
-    let user = await User.findOne({ email })
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required"
+      });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
+    }
+
+    let user = await User.findOne({ email: email.toLowerCase() });
+    
     if (!user) {
-      const [firstName, ...rest] = name.split(" ");
+      const [firstName, ...rest] = name ? name.split(" ") : ['Google'];
       const lastName = rest.join(" ");
 
-      user = await User.create({ firstName, lastName, email });
-
+      user = await User.create({ 
+        firstName: firstName || 'Google',
+        lastName: lastName || '',
+        email: email.toLowerCase(),
+        googleId: `google_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        avatar: req.body.photoURL || ''
+      });
     }
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
     const token = await generateToken(user._id);
+    
     res.cookie("token", token, {
       httpOnly: true,
       path: "/",
-      secure: true,
-      sameSite: "none",
-      maxAge: 3 * 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
     res.status(200).json({
-      user,
+      success: true,
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      },
       token
     })
 
   } catch (error) {
+    console.error("Google login error:", error);
     res.status(500).json({
-      message: `Google login failed ${error}`,
-
-    })
+      success: false,
+      message: "Google login failed"
+    });
   }
 }
 
@@ -165,9 +237,9 @@ export const logout = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       path: "/",      
-      sameSite: "none", 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
     });
 
     res.status(200).json({
@@ -175,9 +247,10 @@ export const logout = async (req, res) => {
       message: "Logged out successfully",
     });
   } catch (error) {
+    console.error("Logout error:", error);
     res.status(500).json({
       success: false,
-      message: "Signout failed",
+      message: "Logout failed",
     });
   }
 };
@@ -186,24 +259,41 @@ export const logout = async (req, res) => {
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-
-      const token = await generateAdminToken(email)
-      res.cookie("adminToken", token, {
-        httpOnly: true,
-        secure: true,
-        path: "/",
-        sameSite: "none",
-        maxAge: 1 * 24 * 60 * 60 * 1000
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
       })
-
-      return res.status(200).json(token)
-    } else {
-      return res.status(401).json({ message: "Invalid admin credentials" });
     }
+
+    if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid admin credentials"
+      })
+    }
+
+    const token = await generateAdminToken(email)
+    
+    res.cookie("adminToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: "/",
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000
+    })
+
+    return res.status(200).json({
+      success: true,
+      message: "Admin login successful",
+      token
+    })
   } catch (error) {
+    console.error("Admin login error:", error);
     return res.status(500).json({
-      message: "Invalid credentials"
+      success: false,
+      message: "Admin login failed"
     })
   }
 }
@@ -212,14 +302,20 @@ export const adminLogout = async (req, res) => {
   try {
     res.clearCookie("adminToken", {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: "/"
     });
-    return res.status(200).json({ message: "Admin logged out successfully" });
+    return res.status(200).json({ 
+      success: true,
+      message: "Admin logged out successfully" 
+    });
   } catch (error) {
-    console.log("Admin logout error:", error.message);
-    return res.status(500).json({ message: "Logout failed" });
+    console.error("Admin logout error:", error.message);
+    return res.status(500).json({ 
+      success: false,
+      message: "Logout failed" 
+    });
   }
 };
 

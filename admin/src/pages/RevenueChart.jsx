@@ -22,28 +22,31 @@ ChartJS.register(
   Legend,
 );
 
-const RevenueChart = () => {
+const RevenueChart = ({ height = 250 }) => {
   const [chartData, setChartData] = useState(null);
   const { baseUrl } = useContext(AuthDataContext);
 
   useEffect(() => {
     const fetchRevenue = async () => {
+      if (!baseUrl) return;
       try {
         const res = await axios.get(baseUrl + "/api/v1/admindata/revenue", {
           withCredentials: true,
         });
 
-        const data = res.data.data;
+        const data = res.data.data || [];
 
         setChartData({
           labels: data.map((d) => d.month),
           datasets: [
             {
-              label: "Revenue (₹)",
+              label: "Revenue",
               data: data.map((d) => d.revenue),
-              backgroundColor: "rgba(75, 192, 192, 0.6)",
-              borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1,
+              backgroundColor: "rgba(250, 204, 21, 0.8)",
+              borderColor: "rgba(234, 179, 8, 1)",
+              borderWidth: 2,
+              borderRadius: 8,
+              borderSkipped: false,
             },
           ],
         });
@@ -55,20 +58,47 @@ const RevenueChart = () => {
     fetchRevenue();
   }, [baseUrl]);
 
-  if (!chartData) return <p className="text-center">Loading chart...</p>;
+  if (!chartData) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[200px]">
+        <div className="animate-pulse text-gray-400">Loading chart...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-6 shadow rounded">
-      <h2 className="text-xl font-bold mb-4">Monthly Revenue</h2>
+    <div style={{ height }}>
       <Bar
         data={chartData}
         options={{
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { position: "top" },
-            title: {
-              display: true,
-              text: "Revenue by Month (Paid Orders Only)",
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#1f2937",
+              titleColor: "#fff",
+              bodyColor: "#fff",
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                label: (context) => `₹${context.raw?.toLocaleString() || 0}`
+              }
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: "#6b7280", font: { size: 11 } },
+            },
+            y: {
+              grid: { color: "#f3f4f6" },
+              ticks: {
+                color: "#6b7280",
+                font: { size: 11 },
+                callback: (value) => `₹${value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}`
+              },
             },
           },
         }}

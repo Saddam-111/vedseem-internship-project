@@ -10,8 +10,193 @@ import {
   FaSync,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PAGE_SIZE = 10;
+
+const AnimatedSelect = ({ value, onChange, options, placeholder, className }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative w-full">
+      <div
+        onClick={() => setOpen(!open)}
+        className={`border p-2.5 rounded-md cursor-pointer flex justify-between items-center bg-white transition-all duration-200 hover:border-yellow-400 hover:shadow-md ${className}`}
+      >
+        <span className={value ? "text-gray-800" : "text-gray-400"}>
+          {options.find((opt) => opt.value === value)?.label || placeholder || "Select"}
+        </span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400 text-xs"
+        >
+          ▼
+        </motion.span>
+      </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full bg-white border border-gray-200 rounded-md mt-1 overflow-hidden shadow-xl"
+          >
+            {options.map((opt, index) => (
+              <motion.div
+                key={opt.value}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`px-3 py-2.5 cursor-pointer transition-colors hover:bg-yellow-50 hover:text-yellow-700 ${
+                  value === opt.value
+                    ? "bg-yellow-50 text-yellow-700 font-medium"
+                    : "text-gray-700"
+                }`}
+              >
+                {opt.label}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const AnimatedDatePicker = ({ value, onChange, label, className }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const currentYear = new Date().getFullYear();
+  
+  const months = [
+    { value: "01", label: "January" },
+    { value: "02", label: "February" },
+    { value: "03", label: "March" },
+    { value: "04", label: "April" },
+    { value: "05", label: "May" },
+    { value: "06", label: "June" },
+    { value: "07", label: "July" },
+    { value: "08", label: "August" },
+    { value: "09", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
+  const currentDate = value ? new Date(value) : new Date();
+  const [selectedMonth, setSelectedMonth] = useState(
+    String(currentDate.getMonth() + 1).padStart(2, "0")
+  );
+  const [selectedYear, setSelectedYear] = useState(String(currentDate.getFullYear()));
+
+  const daysInMonth = new Date(
+    parseInt(selectedYear),
+    parseInt(selectedMonth),
+    0
+  ).getDate();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  return (
+    <div className={`relative ${className}`}>
+      <label className="text-xs text-gray-600">{label}</label>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="border p-2 rounded-md cursor-pointer flex justify-between items-center bg-white transition-all duration-200 hover:border-yellow-400 hover:shadow-md"
+      >
+        <span className={value ? "text-gray-800 text-sm" : "text-gray-400 text-sm"}>
+          {value ? new Date(value).toLocaleDateString("en-IN") : `Select ${label}`}
+        </span>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400 text-xs"
+        >
+          ▼
+        </motion.span>
+      </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full bg-white border border-gray-200 rounded-md mt-1 overflow-hidden shadow-xl p-3"
+          >
+            <div className="flex gap-2 mb-3">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="border p-1.5 rounded text-sm flex-1"
+              >
+                {months.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="border p-1.5 rounded text-sm w-20"
+              >
+                {Array.from({ length: 10 }, (_, i) => currentYear - 5 + i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-3">
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                <div key={i} className="text-center text-xs font-medium text-gray-500">
+                  {d}
+                </div>
+              ))}
+              {Array.from({ length: new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1).getDay() }).map((_, i) => (
+                <div key={`empty-${i}`} />
+              ))}
+              {days.map((day) => (
+                <motion.button
+                  key={day}
+                  type="button"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    onChange(`${selectedYear}-${selectedMonth}-${day.toString().padStart(2, "0")}`);
+                    setIsOpen(false);
+                  }}
+                  className="p-1.5 text-sm rounded hover:bg-yellow-50 hover:text-yellow-700 transition-colors"
+                >
+                  {day}
+                </motion.button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onChange(""); setIsOpen(false); }}
+                className="flex-1 py-1.5 text-sm border rounded hover:bg-gray-50"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex-1 py-1.5 text-sm bg-yellow-400 text-black rounded hover:bg-yellow-500"
+              >
+                Done
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const exportToCSV = (rows, filename = "products.csv") => {
   if (!rows || !rows.length) return;
@@ -313,6 +498,29 @@ const Lists = () => {
     return [...s].filter(Boolean).sort();
   }, [list]);
 
+  const sortOptions = [
+    { value: "", label: "Sort — None" },
+    { value: "newest", label: "Newest" },
+    { value: "oldest", label: "Oldest" },
+    { value: "price-asc", label: "Price: Low → High" },
+    { value: "price-desc", label: "Price: High → Low" },
+    { value: "stock-asc", label: "Stock: Low → High" },
+    { value: "stock-desc", label: "Stock: High → Low" },
+    { value: "name-asc", label: "Name: A → Z" },
+    { value: "name-desc", label: "Name: Z → A" },
+  ];
+
+  const filterStockOptions = [
+    { value: "all", label: "All Stock" },
+    { value: "low", label: "Low stock (≤5)" },
+    { value: "out", label: "Out of stock" },
+  ];
+
+  const categoryFilterOptions = [
+    { value: "", label: "All Categories" },
+    ...uniqueCategories.map((c) => ({ value: c, label: c })),
+  ];
+
   return (
     <div className="p-4 md:p-6 max-w-8xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -370,56 +578,41 @@ const Lists = () => {
                 className="border p-2 rounded-md w-full"
               />
 
-              <select
+              <AnimatedSelect
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border p-2 rounded-md w-full"
-              >
-                <option value="">Sort — None</option>
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="price-asc">Price: Low → High</option>
-                <option value="price-desc">Price: High → Low</option>
-                <option value="stock-asc">Stock: Low → High</option>
-                <option value="stock-desc">Stock: High → Low</option>
-                <option value="name-asc">Name: A → Z</option>
-                <option value="name-desc">Name: Z → A</option>
-              </select>
-
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="border p-2 rounded-md w-full"
-              >
-                <option value="">All Categories</option>
-                {uniqueCategories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={filterStock}
-                onChange={(e) => setFilterStock(e.target.value)}
-                className="border p-2 rounded-md w-full"
-              >
-                <option value="all">All Stock</option>
-                <option value="low">Low stock (≤5)</option>
-                <option value="out">Out of stock</option>
-              </select>
-
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                onChange={setSortBy}
+                options={sortOptions}
+                placeholder="Sort — None"
+                className="w-full"
               />
-              <input
-                type="date"
+
+              <AnimatedSelect
+                value={filterCategory}
+                onChange={setFilterCategory}
+                options={categoryFilterOptions}
+                placeholder="All Categories"
+                className="w-full"
+              />
+
+              <AnimatedSelect
+                value={filterStock}
+                onChange={setFilterStock}
+                options={filterStockOptions}
+                placeholder="All Stock"
+                className="w-full"
+              />
+
+              <AnimatedDatePicker
+                value={dateFrom}
+                onChange={setDateFrom}
+                label="From"
+                className="w-full"
+              />
+              <AnimatedDatePicker
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="border p-2 rounded-md w-full"
+                onChange={setDateTo}
+                label="To"
+                className="w-full"
               />
               <div />
             </div>

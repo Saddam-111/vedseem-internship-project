@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuthDataContext } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
-const categoryOptions = [
+const categories = [
   { value: "gifts", label: "Gifts" },
   { value: "toys", label: "Toys" },
   { value: "flowers", label: "Flowers" },
@@ -12,33 +12,22 @@ const categoryOptions = [
   { value: "watch", label: "Watch" },
   { value: "icecream", label: "Ice Cream" },
   { value: "personalized-gifts", label: "Personalized Gifts" },
+  { value: "electronics-gadgets", label: "Electronics & Gadgets" },
+  { value: "fashion-accessories", label: "Fashion Accessories" },
+  { value: "home-decor", label: "Home Decor" },
+  { value: "food-beverages", label: "Food & Beverages" },
   { value: "gifts-for-men", label: "Gifts for Men" },
   { value: "gifts-for-women", label: "Gifts for Women" },
-  { value: "electronics-gadgets", label: "Electronics & Gadgets" },
-  { value: "fashion-accessories", label: "Fashion & Accessories" },
-  { value: "home-decor", label: "Home & Decor" },
-  { value: "food-beverages", label: "Food & Beverages" },
   { value: "toys-games", label: "Toys & Games" },
   { value: "wellness-selfcare", label: "Wellness & Self-Care" },
-  { value: "rakhi-specials", label: "Rakhi Specials" },
-  { value: "gifts-for-kids", label: "Gifts for Kids" },
-  { value: "all-gifts", label: "All Gifts" },
-  { value: "same-day-delivery", label: "Same Day Delivery" },
-  { value: "trending-drinkware", label: "Trending Drinkware" },
 ];
-const subCategoryOptions = [
-  { value: "general", label: "General" },
+
+const subCategories = [
   { value: "birthday", label: "Birthday" },
   { value: "anniversary", label: "Anniversary" },
   { value: "congratulation", label: "Congratulation" },
   { value: "thanks", label: "Thanks" },
-  { value: "personalized-gifts", label: "Personalized Gifts" },
-  { value: "electronics-gadgets", label: "Electronics & Gadgets" },
-  { value: "fashion-accessories", label: "Fashion & Accessories" },
-  { value: "home-decor", label: "Home & Decor" },
-  { value: "food-beverages", label: "Food & Beverages" },
-  { value: "toys-games", label: "Toys & Games" },
-  { value: "wellness-selfcare", label: "Wellness & Self-Care" },
+  { value: "general", label: "General" },
 ];
 
 const Dropdown = ({ options, value, setValue, label, disabled }) => {
@@ -48,43 +37,52 @@ const Dropdown = ({ options, value, setValue, label, disabled }) => {
       <label className="text-gray-700 font-semibold mb-1 block">{label}</label>
       <div
         onClick={() => !disabled && setOpen(!open)}
-        className={`border p-3 rounded-lg cursor-pointer flex justify-between items-center bg-white transition-colors ${
+        className={`border p-3 rounded-lg cursor-pointer flex justify-between items-center bg-white transition-all duration-200 ${
           disabled
             ? "bg-gray-100 cursor-not-allowed"
-            : "border-gray-300 hover:border-blue-300"
+            : "border-gray-300 hover:border-yellow-400 hover:shadow-md"
         }`}
       >
-        <span>
+        <span className={value ? "text-gray-800" : "text-gray-400"}>
           {options.find((opt) => opt.value === value)?.label ||
             `Select ${label}`}
         </span>
-        <span
-          className={`transition-transform ${open ? "rotate-180" : "rotate-0"}`}
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-gray-400"
         >
           ▼
-        </span>
+        </motion.span>
       </div>
 
       <AnimatePresence>
         {open && !disabled && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.18 }}
-            className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg mt-1 overflow-y-auto max-h-44 shadow-lg"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg mt-1 overflow-hidden shadow-xl"
           >
-            {options.map((opt) => (
-              <div
+            {options.map((opt, index) => (
+              <motion.div
                 key={opt.value}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
                 onClick={() => {
                   setValue(opt.value);
                   setOpen(false);
                 }}
-                className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                className={`px-3 py-2.5 cursor-pointer transition-colors hover:bg-yellow-50 hover:text-yellow-700 ${
+                  value === opt.value
+                    ? "bg-yellow-50 text-yellow-700 font-medium"
+                    : "text-gray-700"
+                }`}
               >
                 {opt.label}
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         )}
@@ -112,6 +110,38 @@ const Add = () => {
   const [isCustomizable, setIsCustomizable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+
+  const generateDescription = async () => {
+    if (!name.trim()) {
+      setErrorMsg("Please enter a product name first");
+      return;
+    }
+    if (!category) {
+      setErrorMsg("Please select a category first");
+      return;
+    }
+    
+    setGeneratingDesc(true);
+    setErrorMsg("");
+    try {
+      const { data } = await axios.post(
+        `${baseUrl}/api/v1/ai/generate-product-description`,
+        { productName: name, category },
+        { withCredentials: true }
+      );
+      if (data.success) {
+        setDescription(data.description);
+      } else {
+        setErrorMsg(data.message || "Failed to generate description");
+      }
+    } catch (error) {
+      console.error("Generate description error:", error);
+      setErrorMsg(error.response?.data?.message || "Failed to generate description");
+    } finally {
+      setGeneratingDesc(false);
+    }
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -226,9 +256,19 @@ const Add = () => {
           </div>
 
           <div>
-            <p className="text-gray-700 font-semibold mb-1">
-              Product Description
-            </p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-gray-700 font-semibold">
+                Product Description
+              </p>
+              <button
+                type="button"
+                onClick={generateDescription}
+                disabled={generatingDesc || !name || !category}
+                className="text-xs px-2 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {generatingDesc ? "Generating..." : "✨ AI Generate"}
+              </button>
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -240,14 +280,14 @@ const Add = () => {
           </div>
 
           <Dropdown
-            options={categoryOptions}
+            options={categories}
             value={category}
             setValue={setCategory}
             label="Category"
             disabled={loading}
           />
           <Dropdown
-            options={subCategoryOptions}
+            options={subCategories}
             value={subCategory}
             setValue={setSubCategory}
             label="Subcategory"

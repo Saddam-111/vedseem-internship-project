@@ -6,6 +6,8 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Product name is required"],
       trim: true,
+      minlength: [2, "Product name must be at least 2 characters"],
+      maxlength: [200, "Product name cannot exceed 200 characters"]
     },
 
     image: {
@@ -20,59 +22,25 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Product description is required"],
       minlength: [10, "Description must be at least 10 characters long"],
+      maxlength: [2000, "Description cannot exceed 2000 characters"]
     },
 
     price: {
       type: Number,
       required: [true, "Product price is required"],
       min: [0, "Price cannot be negative"],
+      max: [1000000, "Price cannot exceed 10 lakh"]
     },
 
     category: {
       type: String,
       required: [true, "Category is required"],
-      enum: [
-        "gifts",
-        "toys",
-        "flowers",
-        "tablelamp",
-        "watch",
-        "icecream",
-        "personalized-gifts",
-        "electronics-gadgets",
-        "fashion-accessories",
-        "home-decor",
-        "food-beverages",
-        "gifts-for-men",
-        "gifts-for-women",
-        "toys-games",
-        "wellness-selfcare",
-        "rakhi-specials",
-        "gifts-for-kids",
-        "all-gifts",
-        "same-day-delivery",
-        "trending-drinkware",
-      ],
       lowercase: true,
       trim: true,
     },
 
     subCategory: {
       type: String,
-      enum: [
-        "birthday",
-        "anniversary",
-        "congratulation",
-        "thanks",
-        "personalized-gifts",
-        "electronics-gadgets",
-        "fashion-accessories",
-        "home-decor",
-        "food-beverages",
-        "toys-games",
-        "wellness-selfcare",
-        "general",
-      ],
       default: "general",
       lowercase: true,
       trim: true,
@@ -84,36 +52,51 @@ const productSchema = new mongoose.Schema(
     },
 
     isCustomizable: {
-  type: Boolean,
-  default: false,
-},
-reviews: [
-  {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    name: String,
-    rating: { type: Number, min: 1, max: 5 },
-    comment: String,
-    date: { type: Date, default: Date.now }
-  }
-],
+      type: Boolean,
+      default: false,
+    },
+    reviews: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        name: String,
+        rating: { type: Number, min: 1, max: 5 },
+        comment: String,
+        date: { type: Date, default: Date.now }
+      }
+    ],
 
-rating: {
-  type: Number,
-  default: 0,
-},
-numReviews: {
-  type: Number,
-  default: 0,
-},
-  stock: {
-  type: Number,
-  required: true,
-  min: [0, "Stock cannot be negative"],
-  default: 0,
-},
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    numReviews: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    stock: {
+      type: Number,
+      required: true,
+      min: [0, "Stock cannot be negative"],
+      default: 0,
+    },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+productSchema.index({ category: 1 });
+productSchema.index({ subCategory: 1 });
+productSchema.index({ name: 'text', description: 'text' });
+
+productSchema.virtual('isInStock').get(function() {
+  return this.stock > 0;
+});
 
 const Product = mongoose.model("Product", productSchema);
 

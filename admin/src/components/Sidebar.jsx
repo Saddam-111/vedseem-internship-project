@@ -1,50 +1,70 @@
 import React, { useContext } from "react";
-import { NavLink } from "react-router-dom";
-import { FiPackage, FiList, FiShoppingCart } from "react-icons/fi";
+import { NavLink, useNavigate } from "react-router-dom";
+import { FiPackage, FiList, FiShoppingCart, FiLogOut } from "react-icons/fi";
 import { AiTwotoneFileAdd } from "react-icons/ai";
 import { MdDashboard } from "react-icons/md";
 import { LuList } from "react-icons/lu";
 import { AdminDataContext } from "../context/AdminContext";
-import { FaChevronCircleLeft, FaChevronCircleRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaBell } from "react-icons/fa";
+import { AuthDataContext } from "../context/AuthContext";
+import axios from "axios";
+
 const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }) => {
-  const { newOrders } = useContext(AdminDataContext);
+  const { newOrders, setAdminData } = useContext(AdminDataContext);
+  const { baseUrl } = useContext(AuthDataContext);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${baseUrl}/api/v1/auth/adminLogout`, { withCredentials: true });
+      setAdminData(null);
+      navigate("/login");
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+  };
 
   const menuItems = [
-    { icon: <MdDashboard size={22} />, label: "Dashboard", path: "/" },
-    { icon: <FiPackage size={22} />, label: "Add Items", path: "/add" },
-    { icon: <FiList size={22} />, label: "List Items", path: "/lists" },
-    {
-      icon: <FiShoppingCart size={22} />,
-      label: "View Orders",
+    { icon: <MdDashboard size={20} />, label: "Dashboard", path: "/" },
+    { icon: <FiPackage size={20} />, label: "Add Products", path: "/add" },
+    { icon: <FiList size={20} />, label: "Product List", path: "/lists" },
+    { 
+      icon: <FiShoppingCart size={20} />, 
+      label: "Orders", 
       path: "/orders",
+      badge: newOrders.length > 0 ? newOrders.length : null
     },
-    {
-      icon: <AiTwotoneFileAdd size={22} />,
-      label: "Add Blogs",
-      path: "/add-blogs",
-    },
-    { icon: <LuList size={22} />, label: "View Blogs", path: "/blog-list" },
+    { icon: <AiTwotoneFileAdd size={20} />, label: "Add Blog", path: "/add-blogs" },
+    { icon: <LuList size={20} />, label: "Blog List", path: "/blog-list" },
   ];
 
   return (
     <aside
       className={`
-        fixed inset-y-0 left-0 z-50 bg-white shadow-md
+        fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-white to-gray-50 shadow-xl
         transition-all duration-300 ease-in-out flex flex-col
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         ${collapsed ? "w-20" : "w-64"}
         md:translate-x-0
       `}
     >
-      <div className="w-full flex items-center justify-between px-2 py-2 border-b">
+      {/* Header */}
+      <div className="h-16 flex items-center justify-between px-4 border-b bg-white">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-lg">D</span>
+            </div>
+            <span className="font-bold text-gray-800">Admin</span>
+          </div>
+        )}
+        
         <button
-          className="hidden md:inline-flex items-center justify-center p-2 rounded hover:bg-gray-100"
+          className="hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 text-gray-600"
           onClick={() => setCollapsed(!collapsed)}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <span className="text-3xl select-none bg-[#F0D800] text-[#710000] px-3 py-1 rounded">
-            {collapsed ? <FaChevronCircleLeft /> : <FaChevronCircleRight />}
-          </span>
+          {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </button>
 
         <button
@@ -56,7 +76,8 @@ const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }) => {
         </button>
       </div>
 
-      <div className="p-2 flex flex-col gap-2">
+      {/* Menu Items */}
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item, idx) => (
           <NavLink
             key={idx}
@@ -65,25 +86,36 @@ const Sidebar = ({ isOpen, setIsOpen, collapsed, setCollapsed }) => {
               if (window.innerWidth < 768) setIsOpen(false);
             }}
             className={({ isActive }) =>
-              `flex items-center gap-3 p-2 rounded-lg transition relative
-               ${
-                 isActive
-                   ? "text-[#710000] bg-[#F0D800] font-semibold shadow-sm"
-                   : "text-gray-700 hover:bg-blue-50 hover:text-blue-900"
-               }`
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative
+              ${
+                isActive
+                  ? "bg-yellow-400 text-black font-semibold shadow-md"
+                  : "text-gray-600 hover:bg-yellow-50 hover:text-yellow-700"
+              }`
             }
           >
-            {item.icon}
-
-            {!collapsed && <p>{item.label}</p>}
-
-            {item.label === "View Orders" && newOrders.length > 0 && (
-              <span className="ml-auto bg-red-600 text-white w-5 h-5 text-xs flex items-center justify-center rounded-full">
-                {newOrders.length}
+            <span className="flex-shrink-0">{item.icon}</span>
+            
+            {!collapsed && <span className="font-medium">{item.label}</span>}
+            
+            {item.badge && (
+              <span className="absolute top-1 right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
+                {item.badge}
               </span>
             )}
           </NavLink>
         ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t bg-white">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition"
+        >
+          <FiLogOut size={20} />
+          {!collapsed && <span className="font-medium">Logout</span>}
+        </button>
       </div>
     </aside>
   );

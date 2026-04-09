@@ -3,7 +3,15 @@ import User from "../models/user.model.js";
 
 export const isAuth = async (req, res, next) => {
   try {
-    const { token } = req.cookies;
+    let token = req.cookies.token;
+    
+    // Also check Authorization header for token (for mobile/production fallback)
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       return res.status(400).json({ message: "User doesn't have token" });

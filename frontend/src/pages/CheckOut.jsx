@@ -9,6 +9,8 @@ const Checkout = () => {
   const { cart, clearCart } = useContext(CartDataContext);
   const { baseUrl } = useContext(UserDataContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
   const [address, setAddress] = useState({
     firstName: "",
@@ -73,42 +75,60 @@ const Checkout = () => {
 
   const normalizeImageData = (image) => {
     if (!image) {
-      return {
-        url: "https://via.placeholder.com/150",
-        publicId: ""
-      };
+      return { url: "https://via.placeholder.com/150", publicId: "" };
     }
 
     if (typeof image === 'string') {
-      return {
-        url: image,
-        publicId: ""
-      };
+      return { url: image, publicId: "" };
     }
 
     if (typeof image === 'object') {
-      return {
-        url: image.url || image,
-        publicId: image.publicId || ""
-      };
+      return { url: image.url || image, publicId: image.publicId || "" };
     }
 
-    return {
-      url: "https://via.placeholder.com/150",
-      publicId: ""
-    };
+    return { url: "https://via.placeholder.com/150", publicId: "" };
+  };
+
+  const validateAddress = () => {
+    const errors = [];
+    
+    if (!address.firstName?.trim()) {
+      errors.push("First name is required");
+    }
+    if (!address.phone?.trim()) {
+      errors.push("Phone number is required");
+    }
+    if (!address.street?.trim()) {
+      errors.push("Street address is required");
+    }
+    if (!address.city?.trim()) {
+      errors.push("City is required");
+    }
+    
+    if (address.phone && !/^\d{10}$/.test(address.phone.replace(/\D/g, ''))) {
+      errors.push("Please enter a valid 10-digit phone number");
+    }
+    
+    if (address.email && !/^\S+@\S+\.\S+$/.test(address.email)) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    return errors;
   };
 
   const handleCOD = async () => {
+    const validationErrors = validateAddress();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(", "));
+      return;
+    }
+
     try {
-   
-      console.log("Raw cart data:", cart);
+      setLoading(true);
+      setError("");
       
       const itemsForOrder = cart.map(item => {
-        console.log("Processing cart item:", item); 
- 
         const productId = item.product?._id || item.product || item.productId;
-        
         const imageData = normalizeImageData(item.image);
         
         return {
@@ -121,9 +141,6 @@ const Checkout = () => {
         };
       });
 
-      console.log("Items sent to backend (COD):", itemsForOrder);
-      console.log("Address sent:", address);
-
       const { data } = await axios.post(
         baseUrl + "/api/v1/order/create",
         {
@@ -134,22 +151,34 @@ const Checkout = () => {
         { withCredentials: true }
       );
 
-      console.log("Order:", data);
-      alert(" Order placed successfully!");
-      clearCart();
-      navigate("/orders");
+      if (data.success) {
+        alert("Order placed successfully!");
+        clearCart();
+        navigate("/orders");
+      } else {
+        setError(data.message || "Failed to place order");
+      }
     } catch (error) {
       console.error("COD order error:", error.response?.data || error);
-      alert(" Failed to place order. Please try again.");
+      setError(error.response?.data?.message || "Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
- 
+  
   const handleRazorpay = async () => {
+    const validationErrors = validateAddress();
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(", "));
+      return;
+    }
+
     try {
-     
-      const normalizedItems = cart.map(item => {
+      setLoading(true);
+      setError("");
       
+      const normalizedItems = cart.map(item => {
         const imageData = normalizeImageData(item.image);
 
         return {
@@ -199,13 +228,16 @@ const Checkout = () => {
               { withCredentials: true }
             );
 
-            alert(" Payment Successful & Order Placed!");
-            console.log("Order:", verifyRes.data);
-            clearCart();
-            navigate("/orders");
+            if (verifyRes.data.success) {
+              alert("Payment Successful & Order Placed!");
+              clearCart();
+              navigate("/orders");
+            } else {
+              alert(verifyRes.data.message || "Payment verification failed");
+            }
           } catch (err) {
             console.error("Payment verification failed:", err);
-            alert(" Payment verification failed");
+            alert("Payment verification failed. Please contact support.");
           }
         },
         prefill: {
@@ -220,19 +252,17 @@ const Checkout = () => {
       razor.open();
     } catch (error) {
       console.error("Razorpay error:", error);
-      alert(" Failed to initiate Razorpay payment");
+      setError(error.response?.data?.message || "Failed to initiate payment");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePlaceOrder = () => {
-    //  Validate required fields
-    if (!address.firstName || !address.phone || !address.street || !address.city) {
-      alert("Please fill in all required address fields");
-      return;
-    }
-
+    setError("");
+    
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      setError("Your cart is empty!");
       return;
     }
 
@@ -248,6 +278,11 @@ const Checkout = () => {
     0
   );
 
+  const handleAddressChange = (key, value) => {
+    setAddress({ ...address, [key]: value });
+    setError("");
+  };
+
   if (cart.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-6 text-center">
@@ -261,7 +296,7 @@ const Checkout = () => {
           <h1 className="text-2xl font-bold">Checkout</h1>
         </div>
         <div className="bg-white shadow p-6 rounded-lg">
-          <p className="text-gray-600 text-lg mb-4">🛒 Your cart is empty.</p>
+          <p className="text-gray-600 text-lg mb-4">Your cart is empty.</p>
           <button 
             onClick={() => navigate('/')} 
             className="px-6 py-2 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500"
@@ -273,7 +308,7 @@ const Checkout = () => {
     );
   }
 
-   return (
+ return (
   <div className="bg-gray-100 min-h-screen py-">
     <div className="max-w-8xl mx-auto p-4">
 
@@ -287,6 +322,12 @@ const Checkout = () => {
         </button>
         <h1 className="text-3xl font-bold text-gray-800">Checkout</h1>
       </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -309,8 +350,8 @@ const Checkout = () => {
             {[
               { key: "firstName", placeholder: "First Name *", required: true },
               { key: "lastName", placeholder: "Last Name" },
-              { key: "email", placeholder: "Email" },
-              { key: "phone", placeholder: "Phone Number *", required: true },
+              { key: "email", placeholder: "Email", type: "email" },
+              { key: "phone", placeholder: "Phone Number *", required: true, type: "tel" },
               { key: "street", placeholder: "Street Address *", full: true, required: true },
               { key: "city", placeholder: "City *", required: true },
               { key: "state", placeholder: "State" },
@@ -319,16 +360,14 @@ const Checkout = () => {
             ].map((field) => (
               <input
                 key={field.key}
-                type="text"
+                type={field.type || "text"}
                 placeholder={field.placeholder}
                 required={field.required}
                 className={`border p-3 rounded-lg text-sm w-full focus:ring-2 focus:ring-yellow-400 ${
                   field.full ? "md:col-span-2" : ""
                 }`}
                 value={address[field.key]}
-                onChange={(e) =>
-                  setAddress({ ...address, [field.key]: e.target.value })
-                }
+                onChange={(e) => handleAddressChange(field.key, e.target.value)}
               />
             ))}
           </div>
@@ -360,12 +399,12 @@ const Checkout = () => {
                       <p className="font-medium text-gray-800">{item.name}</p>
                       <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
                       {item.customization && (
-                        <p className="text-xs text-blue-600">✨ Customized</p>
+                        <p className="text-xs text-blue-600">Customized</p>
                       )}
                     </div>
                   </div>
                   <p className="font-semibold text-gray-700">
-                    ₹{(item.price * item.quantity).toFixed(2)}
+                    Rs.{(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -378,7 +417,7 @@ const Checkout = () => {
               </div>
               <div className="flex justify-between text-gray-900 text-lg font-bold">
                 <span>Total</span>
-                <span className="text-green-600">₹{total.toFixed(2)}</span>
+                <span className="text-green-600">Rs.{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -417,10 +456,10 @@ const Checkout = () => {
           {/* Place Order */}
           <button
             onClick={handlePlaceOrder}
-            disabled={cart.length === 0}
-            className="w-full py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-lg shadow-md transition disabled:bg-gray-400"
+            disabled={loading || cart.length === 0}
+            className="w-full py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-lg shadow-md transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Place Order — ₹{total.toFixed(2)}
+            {loading ? "Processing..." : `Place Order — Rs.${total.toFixed(2)}`}
           </button>
         </div>
 

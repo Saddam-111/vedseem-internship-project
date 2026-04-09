@@ -1,22 +1,28 @@
 // src/context/AdminContext.js
 import axios from "axios";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { AuthDataContext } from "./AuthContext";
 
 export const AdminDataContext = createContext();
 
 function AdminContext({ children }) {
-  // const { baseUrl } = useContext(AuthDataContext);
   const [adminData, setAdminData] = useState(null);
   const [newOrders, setNewOrders] = useState([]);
   const prevOrdersRef = useRef([]);
   const baseUrl = import.meta.env.VITE_BASE_URL
+  
   const getAdmin = async () => {
     try {
-      const result = await axios.get(`${baseUrl}/api/v1/user/getAdmin`, { withCredentials: true });
-      setAdminData(result.data);
+      const result = await axios.get(`${baseUrl}/api/v1/user/getAdmin`, { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (result.data) {
+        setAdminData(result.data);
+      }
     } catch (error) {
-      console.log("getAdmin error", error);
+      console.log("getAdmin error", error.response?.data?.message || error.message);
       setAdminData(null);
     }
   };
@@ -47,8 +53,20 @@ function AdminContext({ children }) {
     return () => clearInterval(intervalId);
   }, [baseUrl]);
 
-  const value = { adminData, setAdminData, getAdmin, newOrders, setNewOrders, refreshOrders: fetchOrdersForNotifications };
-  return <AdminDataContext.Provider value={value}>{children}</AdminDataContext.Provider>;
+  const value = { 
+    adminData, 
+    setAdminData, 
+    getAdmin, 
+    newOrders, 
+    setNewOrders, 
+    refreshOrders: fetchOrdersForNotifications 
+  };
+  
+  return (
+    <AdminDataContext.Provider value={value}>
+      {children}
+    </AdminDataContext.Provider>
+  );
 }
 
 export default AdminContext;

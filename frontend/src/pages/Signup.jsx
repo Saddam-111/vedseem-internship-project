@@ -23,32 +23,61 @@ function Signup() {
     confirmPassword: "",
   });
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  }
+
+  const validateForm = () => {
+    if (!formData.email || !formData.firstName || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required");
+      return false;
+    }
+    
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); 
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
-      return; 
+    
+    if (!validateForm()) {
+      return;
     }
 
     try {
       setLoading(true);
+      setError("");
+      
       const res = await axios.post(baseUrl + "/api/v1/auth/register", formData, {
         withCredentials: true,
       });
-      setUserData(res.data.user);
-      console.log(res.data);
-      console.log(res.data.user);
-      navigate("/");
+      
+      if (res.data.success) {
+        setUserData(res.data.user);
+        navigate("/");
+      } else {
+        setError(res.data.message || "Signup failed");
+      }
     } catch (err) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError("Signup failed. Please try again later.");
+        setError("Signup failed. Please try again.");
       }
       console.error("Signup failed:", err.response?.data || err.message);
     } finally {
@@ -58,22 +87,41 @@ function Signup() {
 
   const googleSignup = async () => {
     try {
+      setLoading(true);
+      setError("");
+      
       const response = await signInWithPopup(auth, provider);
       const user = response.user;
-      const name = user.displayName;
+      const name = user.displayName || "Google User";
       const email = user.email;
 
       const result = await axios.post(
         baseUrl + "/api/v1/auth/googleLogin",
-        { email, name },
+        { email, name, photoURL: user.photoURL },
         { withCredentials: true }
       );
-      setUserData(result.data.user);
-      navigate("/");
-      console.log(result.data);
+      
+      if (result.data.success) {
+        // Save token to localStorage as backup
+        if (result.data.token) {
+          localStorage.setItem('token', result.data.token);
+        }
+        setUserData(result.data.user);
+        navigate("/");
+      } else {
+        setError(result.data.message || "Google signup failed");
+      }
     } catch (error) {
       console.log(error);
-      setError("Google signup failed. Please try again.");
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError("Sign-up popup was closed");
+      } else if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Google sign-up failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,16 +146,24 @@ function Signup() {
             <h2 className="text-2xl font-bold mb-2">Create Account</h2>
             <p className="text-gray-500 mb-6">Sign up to start shopping</p>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
-                required
-              />
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email *"
+                  className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
+                  required
+                />
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <input
@@ -115,7 +171,7 @@ function Signup() {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="First Name"
+                  placeholder="First Name *"
                   className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
                   required
                 />
@@ -126,7 +182,6 @@ function Signup() {
                   onChange={handleChange}
                   placeholder="Last Name"
                   className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
-                  required
                 />
               </div>
 
@@ -136,31 +191,26 @@ function Signup() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Password"
+                  placeholder="Password * (min 6 characters)"
                   className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
                   required
+                  minLength={6}
                 />
                 <input
                   type="password"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Confirm Password"
+                  placeholder="Confirm Password *"
                   className="flex-1 p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none"
                   required
                 />
               </div>
 
-              {error && (
-                <p className="text-red-500 text-sm text-center font-semibold">
-                  {error}
-                </p>
-              )}
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition disabled:bg-gray-300"
+                className="w-full py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {loading ? "Signing up..." : "Sign Up"}
               </button>
@@ -177,7 +227,8 @@ function Signup() {
               <button
                 onClick={googleSignup}
                 type="button"
-                className="flex items-center gap-2 border border-gray-300 px-6 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition"
+                disabled={loading}
+                className="flex items-center gap-2 border border-gray-300 px-6 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition disabled:opacity-50"
               >
                 <FcGoogle size={24} />
                 <span className="font-medium text-gray-700">

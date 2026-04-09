@@ -14,21 +14,39 @@ function Login() {
   const { baseUrl, setUserData } = useContext(UserDataContext);
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const handleChange = (e) =>
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     try {
       setLoading(true);
+      setError("");
+      
       const res = await axios.post(baseUrl + "/api/v1/auth/login", formData, {
         withCredentials: true,
       });
-      setUserData(res.data.user);
-      navigate("/");
+      
+      if (res.data.success) {
+        setUserData(res.data.user);
+        navigate("/");
+      } else {
+        setError(res.data.message || "Login failed");
+      }
     } catch (err) {
+      const message = err.response?.data?.message || err.message;
+      setError(message);
       console.error("Login failed:", err.response?.data || err.message);
     } finally {
       setLoading(false);
@@ -37,18 +55,41 @@ function Login() {
 
   const googleLogin = async () => {
     try {
+      setLoading(true);
+      setError("");
+      
       const response = await signInWithPopup(auth, provider)
-      let user = response.user 
-      let name = user.displayName
-      let email = user.email
+      const user = response.user 
+      const name = user.displayName || "Google User"
+      const email = user.email
 
-      const result = await axios.post(baseUrl + '/api/v1/auth/googleLogin', {name, email}, {withCredentials: true})
-      setUserData(result.data.user)
-      navigate('/')
-      console.log(result.data)
-
+      const result = await axios.post(baseUrl + '/api/v1/auth/googleLogin', {
+        name, 
+        email,
+        photoURL: user.photoURL
+      }, {
+        withCredentials: true
+      })
+      
+      if (result.data.success) {
+        // Save token to localStorage as backup
+        if (result.data.token) {
+          localStorage.setItem('token', result.data.token);
+        }
+        setUserData(result.data.user)
+        navigate('/')
+      } else {
+        setError(result.data.message || "Google login failed");
+      }
     } catch (error) {
       console.log(error)
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError("Sign-in popup was closed");
+      } else {
+        setError("Google sign-in failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -80,6 +121,12 @@ function Login() {
             <span className="font-semibold text-yellow-600">our store</span>
           </p>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label className="text-sm font-medium">Email</label>
@@ -90,6 +137,7 @@ function Login() {
                 onChange={handleChange}
                 placeholder="Your email"
                 className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                required
               />
             </div>
 
@@ -102,13 +150,14 @@ function Login() {
                 onChange={handleChange}
                 placeholder="Password"
                 className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                required
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition"
+              className="w-full py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading ? "Logging in..." : "Login"}
             </button>
@@ -126,7 +175,8 @@ function Login() {
             <button
                 type="button"
                 onClick={googleLogin}
-                className="flex items-center gap-2 border border-gray-300 px-6 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition"
+                disabled={loading}
+                className="flex items-center gap-2 border border-gray-300 px-6 py-2 rounded-lg shadow-sm hover:bg-gray-100 transition disabled:opacity-50"
               >
                 <FcGoogle size={24} /> 
                 <span className="font-medium text-gray-700">Continue with Google</span>
