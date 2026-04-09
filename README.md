@@ -58,7 +58,9 @@ This project was built as part of an **internship major project** by *Saddam Ans
 
 ## 🧾 Internship Certificate
 
-<img width="2000" height="1414" alt="saddam intership certificaiton program" src="https://github.com/user-attachments/assets/8d07158c-c36f-4cd9-a8b9-ea066440e93e" />
+![internship-certificate](https://github.com/user-attachments/assets/d7b6378f-224f-40c0-9632-c80791c507c5)
+
+
 
 
 ---
