@@ -136,12 +136,6 @@ const Login = () => {
             )}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Default credentials:</p>
-          <p className="font-mono text-xs mt-1">Email: ecommerce@gmail.com</p>
-          <p className="font-mono text-xs">Password: 123456</p>
-        </div>
       </motion.div>
     </div>
   );
